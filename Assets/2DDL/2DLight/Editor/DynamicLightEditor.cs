@@ -120,9 +120,9 @@ public class DynamicLightEditor : Editor {
 
 			if(fRange < 360f){
 				if(segments.intValue < 5) segments.intValue = 5;
-				EditorGUILayout.IntSlider(segments, 5, 20, new GUIContent("Segments","Quantity of line segments is used for build mesh render of 2DLight. 5 at least in spot Lights"));
+				EditorGUILayout.IntSlider(segments, 5, 100, new GUIContent("Segments","Quantity of line segments is used for build mesh render of 2DLight. 5 at least in spot Lights"));
 			}else{
-				EditorGUILayout.IntSlider(segments, 3, 20, new GUIContent("Segments","Quantity of line segments is used for build mesh render of 2DLight. 3 at least"));
+				EditorGUILayout.IntSlider(segments, 3, 100, new GUIContent("Segments","Quantity of line segments is used for build mesh render of 2DLight. 3 at least"));
 			}
 
 			EditorGUILayout.PropertyField(radius,new GUIContent("Radius", "Size of light radius"));
