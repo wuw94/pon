@@ -1,53 +1,108 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 
-public class LevelGenerator : MonoBehaviour
-{
-    public static int max_depth = 4; //how many times we want to recursively create rooms
-    public static float moderate = 1.7f; // how moderate (opposite of extreme) we want each room to be
-    public static float width = 100; // this is the size of the interior, without regard to the wall thickness
-    public static float height = 100;
-    public static Vector2 center = new Vector2(0, 0);
+public class LevelGenerator : MonoBehaviour {
 
-    public GameObject room;
-    public GameObject wall;
+    public int AccelerateUntil = 5; // while our gameobjects is less than this amount, we can't close entrances
+    public int DecelerateAt = 5; // once our gameobjects hits this amount, we need to start closing entrances
+    public GameObject tile;
+    public Room[] room_lib;
+    public static List<Room> current_rooms = new List<Room>();
+    public bool done = false;
+
+    //public Tuple<int, int> s = new Tuple<int, int>();
+
+    private void Awake()
+    {
+        LoadResources();
+        CreateSpawn();
+        
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            CreateRoom();
+        }
+        if (Input.GetKeyDown(KeyCode.Z))
+            Debug.Log(AvailableEntrances());
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector2 point = new Vector2((int)Camera.main.ScreenToWorldPoint(Input.mousePosition).x, (int)Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
+        }
+        CreateRoom();
+    }
+
+    private void LoadResources()
+    {
+        LoadRooms();
+    }
+
+    private void LoadRooms()
+    {
+        GameObject[] rooms = Resources.LoadAll<GameObject>("Rooms");
+        room_lib = new Room[rooms.Length];
+        for (int i = 0; i < rooms.Length; i++)
+        {
+            room_lib[i] = rooms[i].GetComponent<Room>();
+        }
+    }
+
+    private void CreateSpawn()
+    {
+        Room r = Instantiate<Room>(room_lib[1]);
+        r.transform.position = new Vector3(2, 2, 0);
+        current_rooms.Add(r);
+    }
+
+    private void CreateRoom()
+    {
+        // Create a random room from our room library
+        if (!done && AvailableEntrances() > 0)
+        {
+            Room r = Instantiate<Room>(room_lib[UnityEngine.Random.Range(0, room_lib.Length)]);
+
+            // while we're accelerating, we don't want rooms with less entrances than 2
+            if (current_rooms.Count < AccelerateUntil && r.GetEntrances().Count < 2)
+            {
+                Destroy(r.gameObject);
+                return;
+            }
+
+            // while we're decelerating, we don't want rooms with more than 2 entrances
+            // TODO: There's cases where the only possible room to place needs to have more than 2 entrances
+            if (current_rooms.Count >= DecelerateAt && r.GetEntrances().Count > 2)
+            {
+                Destroy(r.gameObject);
+                return;
+            }
+
+            else if (!r.Add())
+            {
+                Destroy(r.gameObject);
+                return;
+            }
+        }
+        else
+        {
+            done = true;
+        }
+
+    }
     
-
-    void Start()
+    public int AvailableEntrances()
     {
-        setBounds();
-        beginRoomGeneration();
+        int to_return = 0;
+        foreach (Room room in current_rooms)
+        {
+            room.UpdateAvailableEntrances();
+            to_return += room.AvailableEntrances;
+        }
+        return to_return;
     }
 
-    private void setBounds()
-    {
-        GameObject bounds = new GameObject("Bounds");
-        bounds.transform.parent = transform;
-        GameObject left_wall = (GameObject)Instantiate(wall, new Vector3(center.x - width / 2 - 0.5f, center.y - 0.5f, 0), Quaternion.identity);
-        left_wall.transform.localScale = new Vector3(1, height + 1, 1);
-        left_wall.name = "Left Wall";
-        left_wall.transform.parent = bounds.transform;
-        GameObject right_wall = (GameObject)Instantiate(wall, new Vector3(center.x + width / 2 + 0.5f, center.y + 0.5f, 0), Quaternion.identity);
-        right_wall.transform.localScale = new Vector3(1, height + 1, 1);
-        right_wall.name = "Right Wall";
-        right_wall.transform.parent = bounds.transform;
-        GameObject top_wall = (GameObject)Instantiate(wall, new Vector3(center.x - 0.5f, center.y + height / 2 + 0.5f, 0), Quaternion.identity);
-        top_wall.transform.localScale = new Vector3(width + 1, 1, 1);
-        top_wall.name = "Top Wall";
-        top_wall.transform.parent = bounds.transform;
-        GameObject bottom_wall = (GameObject)Instantiate(wall, new Vector3(center.x / 2 + 0.5f, center.y - height / 2 - 0.5f, 0), Quaternion.identity);
-        bottom_wall.transform.localScale = new Vector3(width + 1, 1, 1);
-        bottom_wall.name = "Bottom Wall";
-        bottom_wall.transform.parent = bounds.transform;
-    }
-
-    private void beginRoomGeneration()
-    {
-        GameObject room = Instantiate(Resources.Load<GameObject>("Prefabs/Room"));
-        room.GetComponent<Room>().setInfo(  new Vector2(center.x - width / 2, center.x + width / 2),
-                                            new Vector2(center.y - height / 2, center.y + height / 2),
-                                            0   );
-        room.name = "Room (depth=0)";
-        room.transform.parent = transform;
-    }
 }

@@ -1,139 +1,306 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
+/// <summary>
+/// A container that's used for breaking up lists into the 4 cardinal directions.
+/// <para>North, East, South, West</para>
+/// </summary>
+[System.Serializable]
+public class Vec2Container
+{
+    [SerializeField]
+    private Vector2[] North;
+    [SerializeField]
+    private Vector2[] East;
+    [SerializeField]
+    private Vector2[] South;
+    [SerializeField]
+    private Vector2[] West;
+
+    public List<Vector2> Get(int offsetX, int offsetY)
+    {
+        List<Vector2> to_return = new List<Vector2>();
+        foreach (Vector2 entrance in North)
+            to_return.Add(entrance + new Vector2(offsetX, offsetY));
+        foreach (Vector2 entrance in East)
+            to_return.Add(entrance + new Vector2(offsetX, offsetY));
+        foreach (Vector2 entrance in South)
+            to_return.Add(entrance + new Vector2(offsetX, offsetY));
+        foreach (Vector2 entrance in West)
+            to_return.Add(entrance + new Vector2(offsetX, offsetY));
+        return to_return;
+    }
+    public List<Vector2> Get(int offsetX, int offsetY, Direction d)
+    {
+        List<Vector2> to_return = new List<Vector2>();
+        if (d == Direction.North)
+            foreach (Vector2 entrance in North)
+                to_return.Add(entrance + new Vector2(offsetX, offsetY));
+        else if (d == Direction.East)
+            foreach (Vector2 entrance in East)
+                to_return.Add(entrance + new Vector2(offsetX, offsetY));
+        else if (d == Direction.South)
+            foreach (Vector2 entrance in South)
+                to_return.Add(entrance + new Vector2(offsetX, offsetY));
+        else
+            foreach (Vector2 entrance in West)
+                to_return.Add(entrance + new Vector2(offsetX, offsetY));
+        return to_return;
+    }
+}
+
+/* Room.
+ * 
+ * Details:
+ *  A room script to be attached to a GameObject. If you want to access details of a room, use this component in the GameObject.
+ *  LevelGenerator.current_rooms - gives us all the rooms in the level.
+ * 
+ * Technicals:
+ *  The bottom left of a room is its relative center (0,0).
+ *  Coordinates of everything is based on its center, the bottom left position.
+ *  Entrances entered in the prefabs are relative to the bottom right corner of a room.
+ *  For consistency measures, all the Get() functions will return a room's details in absolute values, not relative.
+ *  Room operations will NEVER change the details of another room.
+ *  Room details are specified in the prefabs. Some wacky stuff might happen if you make negative size rooms.
+ *  
+ * Public Gets:
+ *  width   height
+ *  minX    maxX
+ *  minY    maxY
+ *  GetEntrances()          GetEntrances(Direction d)
+ *  GetWalls()              GetWalls(Direction d)
+ *  Overlaps(Room other)
+ * 
+ * Public Methods:
+ *  Add()
+ * 
+ * auth Wesley Wu
+ */
 public class Room : MonoBehaviour
 {
-    /* Dimensions
-     * working_space_x.x gives the left bound of a room
-     * working_space_x.y gives the right bound of a room
-     * working_space_y.x gives the bottom bound of a room
-     * working_space_y.y gives the top bound of a room
-     */
-    public Vector2 working_space_x;
-    public Vector2 working_space_y;
+    public int width;
+    public int height;
 
-    /* Depth
-     * This is the depth of the room. We check it against LevelGenerator.max_depth to make sure we don't make infinite rooms.
-     */
-    public int depth;
+    public int minX { get { return (int)transform.position.x; } }
+    public int maxX { get { return (int)transform.position.x + width - 1; } }
+    public int minY { get { return (int)transform.position.y; } }
+    public int maxY { get { return (int)transform.position.y + height - 1; } }
 
-    /* Padding
-     * Padding determines the bounds of how small you can make your room.
-     * A room cannot be less than padding * padding dimensions.
-     */
-    private int padding = 2;
+    public Vec2Container RelativeEntrances;
+    public Vec2Container RelativeWalls;
+    public int AvailableEntrances;
 
-    public GameObject room;
-    public GameObject wall;
-    private GameObject vertical_wall;
-    private GameObject horizontal_wall;
-
-    public void setInfo(Vector2 wsx, Vector2 wsy, int d)
+    public List<Vector2> GetEntrances()
     {
-        working_space_x = wsx;
-        working_space_y = wsy;
-        depth = d;
-
-        if (depth < LevelGenerator.max_depth)
-        {
-            createDividers();
-            generateNextRoom();
-        }
+        return RelativeEntrances.Get(minX, minY);
+    }
+    public List<Vector2> GetEntrances(Direction d)
+    {
+        return RelativeEntrances.Get(minX, minY, d);
+    }
+    public List<Vector2> GetWalls()
+    {
+        return RelativeWalls.Get(minX, minY);
+    }
+    public List<Vector2> GetWalls(Direction d)
+    {
+        return RelativeWalls.Get(minX, minY, d);
     }
     
-    private void createDividers()
+    public Vector2 Relative2Absolute(Vector2 relative_coordinate)
     {
-        if (getWidth() > padding * 2)
+        return new Vector2(relative_coordinate.x + minX, relative_coordinate.y + minY);
+    }
+    public Vector2 Absolute2Relative(Vector2 absolute_coordinate)
+    {
+        return new Vector2(absolute_coordinate.x - minX, absolute_coordinate.y - minY);
+    }
+
+    private void Awake()
+    {
+        AvailableEntrances = GetEntrances().Count;
+    }
+
+    private void OnMouseDown()
+    {
+        Debug.Log(this);
+    }
+
+    public void UpdateAvailableEntrances()
+    {
+        AvailableEntrances = GetEntrances().Count;
+        foreach (Room other in LevelGenerator.current_rooms)
         {
-            vertical_wall = (GameObject)Instantiate(wall, new Vector3(getRandomX(), center().y, 0), Quaternion.identity);
-            vertical_wall.transform.localScale = new Vector3(1, getHeight(), 1);
-            vertical_wall.name = "Vertical Wall";
-            vertical_wall.transform.parent = transform;
+            foreach (Vector2 this_entrance in this.GetEntrances(Direction.North))
+                if (other.GetEntrances(Direction.South).Contains(this_entrance + Vector2.up))
+                    AvailableEntrances--;
+            foreach (Vector2 this_entrance in this.GetEntrances(Direction.East))
+                if (other.GetEntrances(Direction.West).Contains(this_entrance + Vector2.right))
+                    AvailableEntrances--;
+            foreach (Vector2 this_entrance in this.GetEntrances(Direction.South))
+                if (other.GetEntrances(Direction.North).Contains(this_entrance + Vector2.down))
+                    AvailableEntrances--;
+            foreach (Vector2 this_entrance in this.GetEntrances(Direction.West))
+                if (other.GetEntrances(Direction.East).Contains(this_entrance + Vector2.left))
+                    AvailableEntrances--;
         }
+    }
 
-        if (getHeight() > padding * 2)
+
+    /// <summary>
+    /// Returns whether a given room overlaps with any of the current rooms
+    /// </summary>
+    /// <param name="room"></param>
+    /// <returns></returns>
+    public bool Overlaps()
+    {
+        foreach (Room room in LevelGenerator.current_rooms)
+            if (this.Overlaps(room))
+                return true;
+        return false;
+    }
+    // Caution! This checks overlaps in assumption that your room is a rectangle shape
+    /// <summary>
+    /// Returns whether this room overlaps with a room specified by other.
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    public bool Overlaps(Room other)
+    {
+        return this.minX <= other.maxX && other.minX <= this.maxX && this.minY <= other.maxY && other.minY <= this.maxY;
+    }
+
+    /// <summary>
+    /// This room will attempt to put itself logically into the list of current_rooms.
+    /// If it can, it will put itself into the list.
+    /// If it can't, it will delete itself.
+    /// </summary>
+    /// <returns></returns>
+    public bool Add()
+    {
+        foreach (Room room in LevelGenerator.current_rooms)
+            if (TryAlign(room))
+            {
+                LevelGenerator.current_rooms.Add(this);
+                return true;
+            }
+        return false;
+    }
+
+    /// <summary>
+    /// Try to align this room to a room specified by "other". This means we want to try matching each permutation of entrances together.
+    /// After finding an alignment, we also check if any entrances become blocked due to the new alignment.
+    /// If there an entrance becomes blocked, this is an unacceptable alignment.
+    /// </summary>
+    /// <param name="other"></param>
+    private bool TryAlign(Room other)
+    {
+        if (other.AvailableEntrances == 0)
+            return false;
+        return TryAlignNorth2South(other) || TryAlignEast2West(other) || TryAlignSouth2North(other) || TryAlignWest2East(other);
+    }
+    private bool TryAlignNorth2South(Room other) // Helper function. Try to align any of this room's NORTH entrances with any SOUTH entrances specified by "other".
+    {
+        foreach (Vector2 this_entrance in this.GetEntrances(Direction.North))
         {
-            horizontal_wall = (GameObject)Instantiate(wall, new Vector3(center().x, getRandomY(), 0), Quaternion.identity);
-            horizontal_wall.transform.localScale = new Vector3(getWidth(), 1, 1);
-            horizontal_wall.name = "Horizontal Wall";
-            horizontal_wall.transform.parent = transform;
+            foreach (Vector2 other_entrance in other.GetEntrances(Direction.South))
+            {
+                Vector2 diff = other_entrance - this_entrance + Vector2.down;
+                transform.position = new Vector3(transform.position.x + diff.x,
+                                                    transform.position.y + diff.y,
+                                                    transform.position.z);
+                if (!Overlaps() && !EntranceBlocked() && !BlocksEntrance())
+                {
+                    return true;
+                }
+                    
+            }
         }
+        return false;
     }
-    
-    private void generateNextRoom()
+    private bool TryAlignEast2West(Room other) // Helper function. Try to align any of this room's EAST entrances with any WEST entrances specified by "other".
     {
-        
-        GameObject TL_room = Instantiate(Resources.Load<GameObject>("Prefabs/Room"));
-        TL_room.GetComponent<Room>().setInfo(new Vector2(working_space_x.x, vertical_wall.transform.position.x - 0.5f),
-                                            new Vector2(horizontal_wall.transform.position.y + 0.5f, working_space_y.y),
-                                            depth+1);
-        TL_room.name = "TL Room (depth=" + (depth+1).ToString() + ")";
-        TL_room.transform.parent = transform;
-
-        
-        GameObject TR_room = Instantiate(Resources.Load<GameObject>("Prefabs/Room"));
-        TR_room.GetComponent<Room>().setInfo(new Vector2(vertical_wall.transform.position.x + 0.5f, working_space_x.y),
-                                            new Vector2(horizontal_wall.transform.position.y + 0.5f, working_space_y.y),
-                                            depth + 1);
-        TR_room.name = "TR Room (depth=" + (depth + 1).ToString() + ")";
-        TR_room.transform.parent = transform;
-
-        GameObject BL_room = Instantiate(Resources.Load<GameObject>("Prefabs/Room"));
-        BL_room.GetComponent<Room>().setInfo(new Vector2(working_space_x.x, vertical_wall.transform.position.x - 0.5f),
-                                            new Vector2(working_space_y.x, horizontal_wall.transform.position.y - 0.5f),
-                                            depth + 1);
-        BL_room.name = "BL Room (depth=" + (depth + 1).ToString() + ")";
-        BL_room.transform.parent = transform;
-
-        GameObject BR_room = Instantiate(Resources.Load<GameObject>("Prefabs/Room"));
-        BR_room.GetComponent<Room>().setInfo(new Vector2(vertical_wall.transform.position.x + 0.5f, working_space_x.y),
-                                            new Vector2(working_space_y.x, horizontal_wall.transform.position.y - 0.5f),
-                                            depth + 1);
-        BR_room.name = "BR Room (depth=" + (depth + 1).ToString() + ")";
-        BR_room.transform.parent = transform;
-        
+        foreach (Vector2 this_entrance in this.GetEntrances(Direction.East))
+        {
+            foreach (Vector2 other_entrance in other.GetEntrances(Direction.West))
+            {
+                Vector2 diff = other_entrance - this_entrance + Vector2.left;
+                transform.position = new Vector3(transform.position.x + diff.x,
+                                                    transform.position.y + diff.y,
+                                                    transform.position.z);
+                if (!Overlaps() && !EntranceBlocked() && !BlocksEntrance())
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
-
-
-
-    public Vector2 center()
+    private bool TryAlignSouth2North(Room other) // Helper function. Try to align any of this room's SOUTH entrances with any NORTH entrances specified by "other".
     {
-        return new Vector2((working_space_x.x + working_space_x.y) / 2, (working_space_y.x + working_space_y.y) / 2);
+        foreach (Vector2 this_entrance in this.GetEntrances(Direction.South))
+        {
+            foreach (Vector2 other_entrance in other.GetEntrances(Direction.North))
+            {
+                Vector2 diff = other_entrance - this_entrance + Vector2.up;
+                transform.position = new Vector3(transform.position.x + diff.x,
+                                                    transform.position.y + diff.y,
+                                                    transform.position.z);
+                if (!Overlaps() && !EntranceBlocked() && !BlocksEntrance())
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
-
-    public float getWidth()
+    private bool TryAlignWest2East(Room other) // Helper function. Try to align any of this room's WEST entrances with any EAST entrances specified by "other".
     {
-        return working_space_x.y - working_space_x.x;
+        foreach (Vector2 this_entrance in this.GetEntrances(Direction.West))
+        {
+            foreach (Vector2 other_entrance in other.GetEntrances(Direction.East))
+            {
+                Vector2 diff = other_entrance - this_entrance + Vector2.right;
+                transform.position = new Vector3(transform.position.x + diff.x,
+                                                    transform.position.y + diff.y,
+                                                    transform.position.z);
+                if (!Overlaps() && !EntranceBlocked() && !BlocksEntrance())
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
-    public float getHeight()
+    private bool EntranceBlocked(Room other) // Helper function. Check if any of this room's entrances are blocked by the wall specified by "other".
     {
-        return working_space_y.y - working_space_y.x;
+        foreach (Vector2 this_entrance in this.GetEntrances(Direction.North))
+            if (other.GetWalls(Direction.South).Contains(this_entrance + Vector2.up))
+                return true;
+        foreach (Vector2 this_entrance in this.GetEntrances(Direction.East))
+            if (other.GetWalls(Direction.West).Contains(this_entrance + Vector2.right))
+                return true;
+        foreach (Vector2 this_entrance in this.GetEntrances(Direction.South))
+            if (other.GetWalls(Direction.North).Contains(this_entrance + Vector2.down))
+                return true;
+        foreach (Vector2 this_entrance in this.GetEntrances(Direction.West))
+            if (other.GetWalls(Direction.East).Contains(this_entrance + Vector2.left))
+                return true;
+        return false;   
     }
-
-    private int randomSign()
+    private bool EntranceBlocked() // Helper function. Check if any of this room's entrances are blocked by an existing room's wall.
     {
-        return Random.value < 0.5f ? -1 : 1;
+        foreach (Room room in LevelGenerator.current_rooms)
+            if (EntranceBlocked(room))
+                return true;
+        return false;
     }
-
-    private float getRandomX()
+    private bool BlocksEntrance() // Helper function. Check if any walls of this room blocks another's entrance.
     {
-        float to_return = randomSign() * Random.value * (getWidth() / 2 - 2 - padding); // gets us a value from the center that we're sure doesn't exceed padding
-        to_return /= LevelGenerator.moderate; // make the value closer to the center
-        to_return += center().x; // make the value relative to the center
-        to_return = Mathf.Floor(to_return); // floor the value to make sure we have a nice number for room sizes
-        to_return += getWidth() % 2 == 0 ? 0.5f : 0; // deal with a problem that occurs between even and odd widths
-        return to_return;
+        foreach (Room room in LevelGenerator.current_rooms)
+            if (room.EntranceBlocked(this))
+                return true;
+        return false;
     }
-
-    private float getRandomY()
-    {
-        float to_return = randomSign() * Random.value * (getHeight() / 2 - 2 - padding); // gets us a value from the center that we're sure doesn't exceed padding
-        to_return /= LevelGenerator.moderate; // make the value closer to the center
-        to_return += center().y; // make the value relative to the center
-        to_return = Mathf.Floor(to_return); // floor the value to make sure we have a nice number for room sizes
-        to_return += getHeight() % 2 == 0 ? 0.5f : 0; // deal with a problem that occurs between even and odd widths
-        return to_return;
-    }
-
 }

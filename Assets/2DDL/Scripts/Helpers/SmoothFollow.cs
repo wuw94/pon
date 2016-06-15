@@ -8,7 +8,7 @@ public class SmoothFollow : MonoBehaviour
 	public Transform target;
 	public float smoothDampTime = 0.2f;
 	[HideInInspector]
-	public new Transform transform;
+	//public new Transform transform;
 	public Vector3 cameraOffset;
 	public bool useFixedUpdate = false;
 	
@@ -17,30 +17,33 @@ public class SmoothFollow : MonoBehaviour
 	private float lastZCam;
 	
 	
-	void Awake()
-	{
-		transform = gameObject.transform;
-		lastZCam = transform.position.z;
-		_playerController = target.GetComponent<CharacterController2D>();
-	}
+    public void SetTarget(Transform t)
+    {
+        target = t;
+        lastZCam = t.position.z;
+        _playerController = target.GetComponent<CharacterController2D>();
+    }
 	
 	
 	void LateUpdate()
 	{
 		if( !useFixedUpdate )
-			updateCameraPosition();
+    		updateCameraPosition();
 	}
 
 
 	void FixedUpdate()
 	{
 		if( useFixedUpdate )
-			updateCameraPosition();
+    		updateCameraPosition();
 	}
 
 
 	void updateCameraPosition()
 	{
+        if (transform == null)
+            return;
+
 		if( _playerController == null )
 		{
 			transform.position = Vector3.SmoothDamp( transform.position, target.position - cameraOffset, ref _smoothDampVelocity, smoothDampTime );
