@@ -7,11 +7,11 @@ using System.Collections;
 public class LoadManager : MonoBehaviour
 {
     CameraManager camera_manager;
-    public LevelGenerator level_generator;
+
 
 	void Awake()
     {
-        level_generator = gameObject.AddComponent<LevelGenerator>();
+        
         camera_manager = gameObject.AddComponent<CameraManager>();
 	}
 	

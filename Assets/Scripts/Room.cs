@@ -78,6 +78,8 @@ public class Vec2Container
  */
 public class Room : MonoBehaviour
 {
+    private Dictionary<Direction, int> _available_entrances_d;
+
     public int width;
     public int height;
 
@@ -88,7 +90,6 @@ public class Room : MonoBehaviour
 
     public Vec2Container RelativeEntrances;
     public Vec2Container RelativeWalls;
-    public int AvailableEntrances;
 
     public List<Vector2> GetEntrances()
     {
@@ -115,38 +116,63 @@ public class Room : MonoBehaviour
     {
         return new Vector2(absolute_coordinate.x - minX, absolute_coordinate.y - minY);
     }
+    public static Direction Opposite(Direction d)
+    {
+        return (Direction)(((int)d + 2) % 4);
+    }
+    public static Vector2 Offset(Direction d)
+    {
+        switch (d)
+        {
+            case Direction.North:
+                return Vector2.up;
+            case Direction.East:
+                return Vector2.right;
+            case Direction.South:
+                return Vector2.down;
+            case Direction.West:
+                return Vector2.left;
+        }
+        return Vector2.zero;
+    }
 
     private void Awake()
     {
-        AvailableEntrances = GetEntrances().Count;
+        _available_entrances_d = new Dictionary<Direction, int>();
+        foreach (Direction d in System.Enum.GetValues(typeof(Direction)))
+            _available_entrances_d[d] = GetEntrances(d).Count;
     }
 
     private void OnMouseDown()
     {
-        Debug.Log(this);
+        Debug.Log(AvailableEntrances());
     }
 
+    public int AvailableEntrances()
+    {
+        int to_return = 0;
+        foreach (Direction d in System.Enum.GetValues(typeof(Direction)))
+            to_return += _available_entrances_d[d];
+        return to_return;
+    }
+    private int AvailableEntrances(Direction d)
+    {
+        return _available_entrances_d[d];
+    }
+    /// <summary>
+    /// Updates the available entrances of this room. Checks against every other room.
+    /// <para>This is an O(n) operation, n being the number of rooms</para>
+    /// </summary>
     public void UpdateAvailableEntrances()
     {
-        AvailableEntrances = GetEntrances().Count;
-        foreach (Room other in LevelGenerator.current_rooms)
-        {
-            foreach (Vector2 this_entrance in this.GetEntrances(Direction.North))
-                if (other.GetEntrances(Direction.South).Contains(this_entrance + Vector2.up))
-                    AvailableEntrances--;
-            foreach (Vector2 this_entrance in this.GetEntrances(Direction.East))
-                if (other.GetEntrances(Direction.West).Contains(this_entrance + Vector2.right))
-                    AvailableEntrances--;
-            foreach (Vector2 this_entrance in this.GetEntrances(Direction.South))
-                if (other.GetEntrances(Direction.North).Contains(this_entrance + Vector2.down))
-                    AvailableEntrances--;
-            foreach (Vector2 this_entrance in this.GetEntrances(Direction.West))
-                if (other.GetEntrances(Direction.East).Contains(this_entrance + Vector2.left))
-                    AvailableEntrances--;
-        }
+        foreach (Direction d in System.Enum.GetValues(typeof(Direction)))
+            _available_entrances_d[d] = GetEntrances(d).Count;
+        foreach (Room other in Game.current.level.current_rooms)
+            foreach (Direction d in System.Enum.GetValues(typeof(Direction)))
+                foreach (Vector2 this_entrance in this.GetEntrances(d))
+                    if (other.GetEntrances(Opposite(d)).Contains(this_entrance + Offset(d)))
+                        _available_entrances_d[d]--;
     }
-
-
     /// <summary>
     /// Returns whether a given room overlaps with any of the current rooms
     /// </summary>
@@ -154,7 +180,7 @@ public class Room : MonoBehaviour
     /// <returns></returns>
     public bool Overlaps()
     {
-        foreach (Room room in LevelGenerator.current_rooms)
+        foreach (Room room in Game.current.level.current_rooms)
             if (this.Overlaps(room))
                 return true;
         return false;
@@ -169,24 +195,20 @@ public class Room : MonoBehaviour
     {
         return this.minX <= other.maxX && other.minX <= this.maxX && this.minY <= other.maxY && other.minY <= this.maxY;
     }
-
     /// <summary>
-    /// This room will attempt to put itself logically into the list of current_rooms.
-    /// If it can, it will put itself into the list.
-    /// If it can't, it will delete itself.
+    /// This room will attempt to put itself logically into the list of current_rooms. This involves moving itself
+    /// around each room while aligning entrances with each other. If this returns true, it means its current
+    /// position it is leaving off is a valid spot.
+    /// <para>If this returns false, make sure you delete the room or clean it up</para>
     /// </summary>
     /// <returns></returns>
     public bool Add()
     {
-        foreach (Room room in LevelGenerator.current_rooms)
+        foreach (Room room in Game.current.level.current_rooms)
             if (TryAlign(room))
-            {
-                LevelGenerator.current_rooms.Add(this);
                 return true;
-            }
         return false;
     }
-
     /// <summary>
     /// Try to align this room to a room specified by "other". This means we want to try matching each permutation of entrances together.
     /// After finding an alignment, we also check if any entrances become blocked due to the new alignment.
@@ -195,110 +217,50 @@ public class Room : MonoBehaviour
     /// <param name="other"></param>
     private bool TryAlign(Room other)
     {
-        if (other.AvailableEntrances == 0)
-            return false;
-        return TryAlignNorth2South(other) || TryAlignEast2West(other) || TryAlignSouth2North(other) || TryAlignWest2East(other);
-    }
-    private bool TryAlignNorth2South(Room other) // Helper function. Try to align any of this room's NORTH entrances with any SOUTH entrances specified by "other".
-    {
-        foreach (Vector2 this_entrance in this.GetEntrances(Direction.North))
+        if (other.AvailableEntrances() != 0)
         {
-            foreach (Vector2 other_entrance in other.GetEntrances(Direction.South))
+            foreach (Direction d in System.Enum.GetValues(typeof(Direction)))
             {
-                Vector2 diff = other_entrance - this_entrance + Vector2.down;
-                transform.position = new Vector3(transform.position.x + diff.x,
-                                                    transform.position.y + diff.y,
-                                                    transform.position.z);
-                if (!Overlaps() && !EntranceBlocked() && !BlocksEntrance())
+                if (other.AvailableEntrances(Opposite(d)) != 0)
                 {
-                    return true;
-                }
-                    
-            }
-        }
-        return false;
-    }
-    private bool TryAlignEast2West(Room other) // Helper function. Try to align any of this room's EAST entrances with any WEST entrances specified by "other".
-    {
-        foreach (Vector2 this_entrance in this.GetEntrances(Direction.East))
-        {
-            foreach (Vector2 other_entrance in other.GetEntrances(Direction.West))
-            {
-                Vector2 diff = other_entrance - this_entrance + Vector2.left;
-                transform.position = new Vector3(transform.position.x + diff.x,
-                                                    transform.position.y + diff.y,
-                                                    transform.position.z);
-                if (!Overlaps() && !EntranceBlocked() && !BlocksEntrance())
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    private bool TryAlignSouth2North(Room other) // Helper function. Try to align any of this room's SOUTH entrances with any NORTH entrances specified by "other".
-    {
-        foreach (Vector2 this_entrance in this.GetEntrances(Direction.South))
-        {
-            foreach (Vector2 other_entrance in other.GetEntrances(Direction.North))
-            {
-                Vector2 diff = other_entrance - this_entrance + Vector2.up;
-                transform.position = new Vector3(transform.position.x + diff.x,
-                                                    transform.position.y + diff.y,
-                                                    transform.position.z);
-                if (!Overlaps() && !EntranceBlocked() && !BlocksEntrance())
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    private bool TryAlignWest2East(Room other) // Helper function. Try to align any of this room's WEST entrances with any EAST entrances specified by "other".
-    {
-        foreach (Vector2 this_entrance in this.GetEntrances(Direction.West))
-        {
-            foreach (Vector2 other_entrance in other.GetEntrances(Direction.East))
-            {
-                Vector2 diff = other_entrance - this_entrance + Vector2.right;
-                transform.position = new Vector3(transform.position.x + diff.x,
-                                                    transform.position.y + diff.y,
-                                                    transform.position.z);
-                if (!Overlaps() && !EntranceBlocked() && !BlocksEntrance())
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+                    foreach (Vector2 this_entrance in this.GetEntrances(d))
+                    {
+                        foreach (Vector2 other_entrance in other.GetEntrances(Opposite(d)))
+                        {
+                            Vector2 diff = other_entrance - this_entrance + Offset(Opposite(d));
+                            transform.position = new Vector3(transform.position.x + diff.x,
+                                                                transform.position.y + diff.y,
+                                                                transform.position.z);
+                            if (!Overlaps() && !EntranceBlocked() && !BlocksEntrance())
+                            {
+                                return true;
+                            }
 
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
     private bool EntranceBlocked(Room other) // Helper function. Check if any of this room's entrances are blocked by the wall specified by "other".
     {
-        foreach (Vector2 this_entrance in this.GetEntrances(Direction.North))
-            if (other.GetWalls(Direction.South).Contains(this_entrance + Vector2.up))
-                return true;
-        foreach (Vector2 this_entrance in this.GetEntrances(Direction.East))
-            if (other.GetWalls(Direction.West).Contains(this_entrance + Vector2.right))
-                return true;
-        foreach (Vector2 this_entrance in this.GetEntrances(Direction.South))
-            if (other.GetWalls(Direction.North).Contains(this_entrance + Vector2.down))
-                return true;
-        foreach (Vector2 this_entrance in this.GetEntrances(Direction.West))
-            if (other.GetWalls(Direction.East).Contains(this_entrance + Vector2.left))
-                return true;
+        foreach (Direction d in System.Enum.GetValues(typeof(Direction)))
+            foreach (Vector2 this_entrance in this.GetEntrances(d))
+                if (other.GetWalls(Opposite(d)).Contains(this_entrance + Offset(d)))
+                    return true;
         return false;   
     }
     private bool EntranceBlocked() // Helper function. Check if any of this room's entrances are blocked by an existing room's wall.
     {
-        foreach (Room room in LevelGenerator.current_rooms)
+        foreach (Room room in Game.current.level.current_rooms)
             if (EntranceBlocked(room))
                 return true;
         return false;
     }
     private bool BlocksEntrance() // Helper function. Check if any walls of this room blocks another's entrance.
     {
-        foreach (Room room in LevelGenerator.current_rooms)
+        foreach (Room room in Game.current.level.current_rooms)
             if (room.EntranceBlocked(this))
                 return true;
         return false;
