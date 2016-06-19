@@ -1,19 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class Game : MonoBehaviour
+public class Game : NetworkBehaviour
 {
-    public static Game current;
-
     public LoadManager load_manager;
-    public Level level;
 
     private void Awake()
     {
-        Game.current = gameObject.GetComponent<Game>();
-        Game.current.load_manager = gameObject.AddComponent<LoadManager>();
-        Game.current.level = gameObject.AddComponent<Level>();
-        
     }
     private void Start()
     {
