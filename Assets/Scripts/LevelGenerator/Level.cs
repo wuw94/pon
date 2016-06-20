@@ -124,17 +124,6 @@ public class Level : NetworkBehaviour
         StartCoroutine("GenerateRooms"); // We put this in Start() because rooms have to access the levelgenerator, and it isn't created until Awake() finishes
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Z))
-            Debug.Log(AvailableEntrances());
-        if (Input.GetKeyDown(KeyCode.X))
-            UpdateAvailableEntrancesAll();
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector2 point = new Vector2((int)Camera.main.ScreenToWorldPoint(Input.mousePosition).x, (int)Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
-        }
-    }
 
     public int AvailableEntrances()
     {
