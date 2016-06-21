@@ -21,17 +21,21 @@ public class Server : NetworkManager
     {
     }
 
+    /// <summary>
+    /// Stuff to do to each player for them to acknowledge the
+    /// presence of a new connecting player
+    /// </summary>
     private void UpdateConnections()
     {
-        Player[] p = FindObjectsOfType<Player>();
+        PlayerInfo[] p = FindObjectsOfType<PlayerInfo>();
         for (int i = 0; i < p.Length; i++)
         {
             int id = p[i].connectionToClient.connectionId;
             p[i].RpcUpdateConnections(connections, id);
+            p[i].RpcUpdateTeam(id);
         }
-
-        
     }
+
 
     /// <summary>
     /// We need to register the prefabs before it is able to be
@@ -43,6 +47,9 @@ public class Server : NetworkManager
         foreach (GameObject g in prefabs)
             ClientScene.RegisterPrefab(g);
         prefabs = Resources.LoadAll<GameObject>("SpawnRooms");
+        foreach (GameObject g in prefabs)
+            ClientScene.RegisterPrefab(g);
+        prefabs = Resources.LoadAll<GameObject>("Damagers");
         foreach (GameObject g in prefabs)
             ClientScene.RegisterPrefab(g);
     }
@@ -112,7 +119,7 @@ public class Server : NetworkManager
         Debug.Log("OnServerReady");
     }
 
-    public override void OnServerRemovePlayer(NetworkConnection conn, PlayerController player)
+    public override void OnServerRemovePlayer(NetworkConnection conn, UnityEngine.Networking.PlayerController player)
     {
         base.OnServerRemovePlayer(conn, player);
         Debug.Log("OnServerRemovePlayer");

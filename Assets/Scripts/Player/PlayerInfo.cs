@@ -2,7 +2,12 @@
 using UnityEngine.Networking;
 using System.Collections;
 
-public class Player : Controllable
+public enum Team
+{
+    A,B
+}
+
+public class PlayerInfo : NetworkBehaviour
 {
     // [Command] called on client, executed on server, important for stuff that's client generated
     // [ClientRpc] called on server, executed on client, important for controlling client because clients have authority
@@ -12,13 +17,16 @@ public class Player : Controllable
     public int[] connections = new int[10];
     public int num_connections = 0;
     public int networkID = 0;
-
-    public bool display_name = false;
+    public Team team;
 
     public const int maxHealth = 100;
+    public bool display_name = false;
+
 
     [SyncVar]
     public int currentHealth = maxHealth;
+
+    
 
 
     public void TakeDamage(int amount)
@@ -41,9 +49,32 @@ public class Player : Controllable
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Z))
+        if (!isLocalPlayer)
+            return;
+        if (Input.GetKeyDown(KeyCode.BackQuote))
         {
-            Debug.Log(networkID);
+            CmdPrintOnServer("Hello from: ");
+        }
+        
+
+        UpdateColor();
+    }
+
+    
+
+    private void UpdateColor()
+    {
+        if (isLocalPlayer)
+        {
+            PlayerInfo[] p = FindObjectsOfType<PlayerInfo>();
+            for (int i = 0; i < p.Length; i++)
+            {
+                if (p[i].team != this.team)
+                    p[i].GetComponent<Renderer>().material.color = Color.red;
+                else
+                    p[i].GetComponent<Renderer>().material.color = Color.blue;
+            }
+            GetComponent<Renderer>().material.color = Color.white;
         }
     }
 
@@ -70,37 +101,13 @@ public class Player : Controllable
         networkID = id;
     }
 
-    private void OnGUI()
+    [ClientRpc]
+    public void RpcUpdateTeam(int id)
     {
-        
-
-        if (isLocalPlayer)
-        {
-            foreach (Player p in FindObjectsOfType<Player>())
-            {
-                if (!p.display_name)
-                    break;
-                GUI.Label(new Rect(Camera.main.WorldToScreenPoint(p.transform.position).x,
-                                Camera.main.WorldToScreenPoint(p.transform.position).y,
-                                200, 20),
-                                p.name);
-            }
-
-
-            GUI.Label(new Rect(0, 200, 100, 20), "Connections: " + num_connections);
-            for (int i = 0; i < 10; i++)
-                if (connections[i] != -1)
-                {
-                    GUI.Label(new Rect(0, 220 + 20 * i, 300, 20), "  Player " + connections[i].ToString() + "");
-                }
-                else
-                {
-                    GUI.Label(new Rect(0, 220 + 20 * i, 300, 20), "------ No Player ------");
-                }
-            GUI.Label(new Rect(80, 220 + 20 * this.networkID, 300, 20), "(You)");
-        }
-        
+        team = id % 2 == 0 ? Team.A : Team.B;
     }
+
+    
 
 
     // Stuff to do just to a client player (like changing its color so you can easily recognize it)
@@ -112,6 +119,7 @@ public class Player : Controllable
         CmdUpdatePlayerID(this.name);
         Instantiate(Resources.Load<GameObject>("Camera/Camera"));
         Camera.main.GetComponent<LerpFollow>().target = this.transform;
+        
     }
 
     [Command]

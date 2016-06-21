@@ -6,13 +6,11 @@ using System.Collections;
 /// </summary>
 public class LoadManager : MonoBehaviour
 {
-    CameraManager camera_manager;
 
 
 	void Awake()
     {
         
-        camera_manager = gameObject.AddComponent<CameraManager>();
 	}
 	
 	// Update is called once per frame
