@@ -83,10 +83,11 @@ public abstract class Room : MonoBehaviour
 
     public int width;
     public int height;
-    
 
     public Vec2Container RelativeEntrances;
     public Vec2Container RelativeWalls;
+
+    public bool is_spawn;
 
     public List<Vector2> GetEntrances()
     {
@@ -134,7 +135,8 @@ public abstract class Room : MonoBehaviour
 
     private void OnMouseDown()
     {
-        Debug.Log(this);
+        foreach (Vector2 e in this.GetEntrances(Direction.North))
+            Debug.Log(e);
     }
 
     /// <summary>
@@ -166,11 +168,13 @@ public abstract class Room : MonoBehaviour
             {
                 if (other.AvailableEntrances(Opposite(d)) != 0)
                 {
-                    foreach (Vector2 this_entrance in this.GetEntrances(d))
+                    List<Vector2> this_entrances = this.GetEntrances(d);
+                    List<Vector2> other_entrances = other.GetEntrances(Opposite(d));
+                    for (int this_entrance = 0; this_entrance < this_entrances.Count; this_entrance++)
                     {
-                        foreach (Vector2 other_entrance in other.GetEntrances(Opposite(d)))
+                        for (int other_entrance = 0; other_entrance < other_entrances.Count; other_entrance++)
                         {
-                            Vector2 diff = other_entrance - this_entrance + Offset(Opposite(d));
+                            Vector2 diff = other_entrances[other_entrance] - this_entrances[this_entrance] + Offset(Opposite(d));
                             transform.position = new Vector3(transform.position.x + diff.x,
                                                                 transform.position.y + diff.y,
                                                                 transform.position.z);
@@ -178,7 +182,8 @@ public abstract class Room : MonoBehaviour
                             {
                                 return true;
                             }
-
+                            this_entrances = this.GetEntrances(d);
+                            other_entrances = other.GetEntrances(Opposite(d));
                         }
                     }
                 }
