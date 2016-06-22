@@ -28,9 +28,6 @@ public class PlayerController : NetworkBehaviour
     }
 
 
-
-
-
     private void CheckMovement()
     {
         if (Input.GetMouseButton(0))
@@ -49,6 +46,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+
     [Command]
     void CmdPunch()
     {
@@ -57,5 +55,17 @@ public class PlayerController : NetworkBehaviour
         g.GetComponent<Punch>().team = player.team;
         NetworkServer.Spawn(g);
         Destroy(g, 1.0f);
+    }
+
+
+
+    /// <summary>
+    /// Use this to print something on the server's debug. Useful if we want to debug stuff
+    /// </summary>
+    /// <param name="message"></param>
+    [Command]
+    public void CmdPrintOnServer(string message)
+    {
+        Debug.Log(message);
     }
 }

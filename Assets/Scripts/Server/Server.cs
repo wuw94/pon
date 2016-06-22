@@ -14,12 +14,9 @@ public class Server : NetworkManager
     /// <summary>
     /// Our list of connections (in int based on a connection's connectionId).
     /// </summary>
+    [HideInInspector]
     public int[] connections = new int[10] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
-
-    private void Update()
-    {
-    }
 
     /// <summary>
     /// Stuff to do to each player for them to acknowledge the
@@ -32,7 +29,7 @@ public class Server : NetworkManager
         {
             int id = p[i].connectionToClient.connectionId;
             p[i].RpcUpdateConnections(connections, id);
-            p[i].RpcUpdateTeam(id);
+            p[i].RpcUpdateTeam(Team.Neutral);
         }
     }
 
@@ -50,6 +47,9 @@ public class Server : NetworkManager
         foreach (GameObject g in prefabs)
             ClientScene.RegisterPrefab(g);
         prefabs = Resources.LoadAll<GameObject>("Damagers");
+        foreach (GameObject g in prefabs)
+            ClientScene.RegisterPrefab(g);
+        prefabs = Resources.LoadAll<GameObject>("Interface");
         foreach (GameObject g in prefabs)
             ClientScene.RegisterPrefab(g);
     }
@@ -88,21 +88,20 @@ public class Server : NetworkManager
     {
         base.OnServerAddPlayer(conn, playerControllerId);
         Debug.Log("OnServerAddPlayer");
+        connections[conn.connectionId] = conn.connectionId;
         UpdateConnections();
     }
 
     public override void OnServerConnect(NetworkConnection conn)
     {
         base.OnServerConnect(conn);
-        Debug.Log("Connect from: " + conn.ToString());
-        connections[conn.connectionId] = conn.connectionId;
-        
+        Debug.Log("OnServerConnect");
     }
 
     public override void OnServerDisconnect(NetworkConnection conn)
     {
         base.OnServerDisconnect(conn);
-        Debug.Log("Disconnect from: " + conn.ToString());
+        Debug.Log("OnServerDisconnect");
         connections[conn.connectionId] = -1;
         UpdateConnections();
     }
@@ -129,6 +128,7 @@ public class Server : NetworkManager
     {
         base.OnServerSceneChanged(sceneName);
         Debug.Log("OnServerSceneChanged");
+        NetworkServer.SpawnObjects();
     }
 
     public override void OnStartClient(NetworkClient client)

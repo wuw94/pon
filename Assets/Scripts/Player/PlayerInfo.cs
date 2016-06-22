@@ -4,19 +4,17 @@ using System.Collections;
 
 public enum Team
 {
-    A,B
+    A,B,Neutral
 }
 
 public class PlayerInfo : NetworkBehaviour
 {
-    // [Command] called on client, executed on server, important for stuff that's client generated
-    // [ClientRpc] called on server, executed on client, important for controlling client because clients have authority
-    // [SyncVar] not shared, but your changes are reflected on everybody's computer (for just your object).
-
     // For GUI
     public int[] connections = new int[10];
     public int num_connections = 0;
     public int networkID = 0;
+
+    [SyncVar]
     public Team team;
 
     public const int maxHealth = 100;
@@ -39,11 +37,34 @@ public class PlayerInfo : NetworkBehaviour
         currentHealth -= amount;
         if (currentHealth <= 0)
         {
-            currentHealth = 0;
-            Debug.Log("Dead!");
+            currentHealth = maxHealth;
+            RpcPortToSpawn();
         }
 
     }
+
+
+
+
+    // Stuff to do just to a client player (like changing its color so you can easily recognize it)
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+
+        //this.name = "Player " + this.connectionToClient.connectionId.ToString();
+        Instantiate(Resources.Load<GameObject>("Camera/Camera"));
+        Camera.main.GetComponent<LerpFollow>().target = this.transform;
+
+    }
+
+
+
+    private void Start()
+    {
+        if (!isLocalPlayer)
+            return;
+    }
+
 
 
 
@@ -51,31 +72,25 @@ public class PlayerInfo : NetworkBehaviour
     {
         if (!isLocalPlayer)
             return;
-        if (Input.GetKeyDown(KeyCode.BackQuote))
-        {
-            CmdPrintOnServer("Hello from: ");
-        }
-        
-
         UpdateColor();
     }
+
 
     
 
     private void UpdateColor()
     {
-        if (isLocalPlayer)
+        PlayerInfo[] p = FindObjectsOfType<PlayerInfo>();
+        for (int i = 0; i < p.Length; i++)
         {
-            PlayerInfo[] p = FindObjectsOfType<PlayerInfo>();
-            for (int i = 0; i < p.Length; i++)
-            {
-                if (p[i].team != this.team)
-                    p[i].GetComponent<Renderer>().material.color = Color.red;
-                else
-                    p[i].GetComponent<Renderer>().material.color = Color.blue;
-            }
-            GetComponent<Renderer>().material.color = Color.white;
+            if (p[i].team == Team.Neutral)
+                p[i].GetComponent<Renderer>().material.color = Color.gray;
+            else if (p[i].team != this.team)
+                p[i].GetComponent<Renderer>().material.color = Color.red;
+            else
+                p[i].GetComponent<Renderer>().material.color = Color.blue;
         }
+        GetComponent<Renderer>().material.color = Color.white;
     }
 
     private void OnMouseEnter()
@@ -89,6 +104,9 @@ public class PlayerInfo : NetworkBehaviour
     }
 
 
+
+    // -------------------------------------------------------  RPC  ------------------------------------------------------------
+
     [ClientRpc]
     public void RpcUpdateConnections(int[] c, int id)
     {
@@ -101,47 +119,24 @@ public class PlayerInfo : NetworkBehaviour
         networkID = id;
     }
 
-    [ClientRpc]
-    public void RpcUpdateTeam(int id)
-    {
-        team = id % 2 == 0 ? Team.A : Team.B;
-    }
-
     
-
-
-    // Stuff to do just to a client player (like changing its color so you can easily recognize it)
-    public override void OnStartLocalPlayer()
+    [ClientRpc]
+    public void RpcUpdateTeam(Team t)
     {
-        base.OnStartLocalPlayer();
-
-        //this.name = "Player " + this.connectionToClient.connectionId.ToString();
-        CmdUpdatePlayerID(this.name);
-        Instantiate(Resources.Load<GameObject>("Camera/Camera"));
-        Camera.main.GetComponent<LerpFollow>().target = this.transform;
-        
-    }
-
-    [Command]
-    public void CmdUpdatePlayerID(string name)
-    {
-        transform.name = name;
-        RpcUpdatePlayerID(name);
+        team = t;
     }
 
     [ClientRpc]
-    public void RpcUpdatePlayerID(string name)
+    public void RpcPortToSpawn()
     {
-        transform.name = name;
+        if (!isLocalPlayer)
+            return;
+        Level level = FindObjectOfType<Level>();
+        if (team == Team.A)
+            transform.position = level.SpawnA + new Vector2(1, 1);
+        if (team == Team.B)
+            transform.position = level.SpawnB + new Vector2(1, 1);
     }
 
-    /// <summary>
-    /// Use this to print something on the server's debug. Useful if we want to debug stuff
-    /// </summary>
-    /// <param name="message"></param>
-    [Command]
-    public void CmdPrintOnServer(string message)
-    {
-        Debug.Log(message);
-    }
+
 }

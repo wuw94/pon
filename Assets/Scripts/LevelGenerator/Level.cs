@@ -13,6 +13,11 @@ using System.IO;
 public class RoomLibrary
 {
     private Dictionary<int, Dictionary<Vector2, List<Room>>> _room_lib;
+    public int entrance_min = Int32.MaxValue;
+    public int entrance_max = 0;
+    public int size_min = Int32.MaxValue;
+    public int size_max = 0;
+
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -46,6 +51,14 @@ public class RoomLibrary
             _room_lib[entrances] = new Dictionary<Vector2, List<Room>>();
         if (!_room_lib[entrances].ContainsKey(size))
             _room_lib[entrances][size] = new List<Room>();
+        if (entrances < entrance_min)
+            entrance_min = entrances;
+        if (entrances > entrance_max)
+            entrance_max = entrances;
+        if (size.x < size_min)
+            size_min = (int)size.x;
+        if (size.x > size_max)
+            size_max = (int)size.x;
         _room_lib[entrances][size].Add(r);
     }
     /// <summary>
@@ -64,6 +77,19 @@ public class RoomLibrary
         if (_room_lib[entrances][size].Count == 0)
             return null;
         return _room_lib[entrances][size][UnityEngine.Random.Range(0, _room_lib[entrances][size].Count)];
+    }
+
+    public List<Room> Get(int entrances)
+    {
+        List<Room> to_return = new List<Room>();
+        foreach (KeyValuePair<Vector2, List<Room>> layer2 in _room_lib[entrances])
+        {
+            foreach (Room room in layer2.Value)
+            {
+                to_return.Add(room);
+            }
+        }
+        return to_return;
     }
 
     public Room GetRandomWithinSize(bool accelerate, int size_min, int size_max)
@@ -172,7 +198,7 @@ public class Level : NetworkBehaviour
     /// <summary>
     /// When to stop accelerating. Don't make this bigger than _decelerate_at!
     /// </summary>
-    private int _accelerate_until = 5;
+    private int _accelerate_until = 10;
 
     /// <summary>
     /// When to start decelerating
@@ -182,7 +208,7 @@ public class Level : NetworkBehaviour
     /// <summary>
     /// How many times we've tried generating a room.
     /// </summary>
-    private int _generation_count;
+    private int _generation_count; // Unused
     
     /// <summary>
     /// A check of whether our level generation is done or not.
@@ -194,18 +220,27 @@ public class Level : NetworkBehaviour
     /// </summary>
     public List<Room> spawn_rooms;
 
+    private Dictionary<Team, Room> _spawn;
+    [SyncVar]
+    public Vector2 SpawnA;
+
+    [SyncVar]
+    public Vector2 SpawnB;
 
 
     private void Awake()
     {
         current_rooms = new List<Room>();
         spawn_rooms = new List<Room>();
+        _spawn = new Dictionary<Team, Room>();
         done = false;
         _LoadResources();
     }
 
     private void Start()
     {
+        if (!isServer)
+            return;
         CreateFirstRoom(new Vector2(0, 0));
         StartCoroutine("GenerateRooms"); // We put this in Start() because rooms have to access the levelgenerator, and it isn't created until Awake() finishes
     }
@@ -265,59 +300,155 @@ public class Level : NetworkBehaviour
     {
         while (!done)
         {
-            if (!Input.GetKeyDown(KeyCode.A))
-                yield return null;
-            Room r = null;
-            int entrances = 2;
-            Vector2 size = new Vector2(1, 1);
 
-            // while we're accelerating, we don't want rooms with less entrances than 2
-            // we also want the biggest rooms
             if (current_rooms.Count < _accelerate_until)
             {
-                entrances = UnityEngine.Random.Range(2, 8);
-                size = new Vector2(2, 2);
-                r = Instantiate<Room>(_room_lib.GetRandomWithinSize(true, 2, 2));
+                Accelerate();
             }
             else
             {
-                done = true;
-            }
-
-            // while we're decelerating, we don't want rooms with more than 2 entrances.
-            // this is when we start closing off entrances.
-            // TODO: There's cases where the only possible room to place needs to have more than 2 entrances
-            if (current_rooms.Count >= _decelerate_at)
-            {
-                entrances = UnityEngine.Random.Range(1, 3);
-                //r = Instantiate<Room>(_room_lib.GetRandom(false));
+                Decelerate();
             }
             
-            if (r == null)
-            {
-                r = Instantiate<Room>(_room_lib.GetRandom(entrances, size));
-            }
-            r.transform.parent = this.transform;
-
-            if (r.Add(current_rooms))
-            {
-                current_rooms.Add(r);
-                UpdateAvailableEntrancesAll();
-                NetworkServer.Spawn(r.gameObject);
-            }
-            else
-            {
-                Destroy(r.gameObject);
-            }
-
             if (AvailableEntrances() == 0)
             {
                 done = true;
-                break;
+                Debug.Log("Level generation done. " + spawn_rooms.Count + " viable spawn rooms.");
+                if (spawn_rooms.Count >= Enum.GetValues(typeof(Team)).Length) // If our map is acceptable!
+                {
+                    AssignSpawnRooms();
+                    break;
+                }
+                else
+                {
+                    yield return new WaitForSeconds(0.5f);
+                    StopCoroutine("GenerateRooms");
+                    
+                    Reset();
+                }
             }
-
+            
             yield return null;
         }
     }
 
+    private void Reset()
+    {
+        foreach (Room r in current_rooms)
+        {
+            Destroy(r.gameObject);
+        }
+        current_rooms = new List<Room>();
+        spawn_rooms = new List<Room>();
+        done = false;
+        CreateFirstRoom(new Vector2(0, 0));
+        StartCoroutine("GenerateRooms");
+        
+    }
+
+    private void AssignSpawnRooms()
+    {
+        // We want to assign the two rooms that are furthest from one another.
+        _spawn[Team.A] = spawn_rooms[0];
+        _spawn[Team.B] = spawn_rooms[0];
+
+        for (int i = 0; i < spawn_rooms.Count; i++)
+        {
+            for (int j = i; j < spawn_rooms.Count; j++)
+            {
+                if (Vector2.Distance(spawn_rooms[i].transform.position, spawn_rooms[j].transform.position) > Vector2.Distance(_spawn[Team.A].transform.position, _spawn[Team.B].transform.position))
+                {
+                    _spawn[Team.A] = spawn_rooms[i];
+                    _spawn[Team.B] = spawn_rooms[j];
+                }
+            }
+        }
+        _spawn[Team.A].name += " SpawnA";
+        _spawn[Team.B].name += " SpawnB";
+
+        SpawnA = _spawn[Team.A].transform.position;
+        SpawnB = _spawn[Team.B].transform.position;
+    }
+
+    private void Accelerate()
+    {
+        Room r = null;
+        int count = 0;
+
+        while (true)
+        {
+            count++; // Increment count, which we will check to make sure we dont run this indefinitely
+            if (count > 100000)
+            {
+                Debug.LogError("We ran Accelerate() randomly 100000 times but could not find a room");
+                return;
+            }
+
+            int entrances = UnityEngine.Random.Range(2, _room_lib.entrance_max + 1); // Set our num entrances randomly (but within bounds)
+            int s = UnityEngine.Random.Range(1, _room_lib.size_max + 1); // Set our size randomly (but within bounds)
+            r = _room_lib.GetRandom(entrances, new Vector2(s, s)); // Try to create a room. This will be null if the specifications don't exist.
+
+
+            if (r != null) // If we found a room with the specifications...
+            {
+                r = Instantiate<Room>(r);
+                if (r.Add(current_rooms))
+                {
+                    r.transform.parent = this.transform;
+                    if (r.is_spawn)
+                        spawn_rooms.Add(r);
+                    current_rooms.Add(r);
+                    UpdateAvailableEntrancesAll();
+                    NetworkServer.Spawn(r.gameObject);
+                    return;
+                }
+                else
+                {
+                    Destroy(r.gameObject);
+                }
+            }
+        }
+    }
+
+    private void Decelerate()
+    {
+        Room r = null;
+        int count = 0;
+        
+        while (true)
+        {
+            count++;
+            if (count > 100000)
+            {
+                Debug.LogError("We ran Decelerate() randomly 100000 times but could not find a room");
+                return;
+            }
+
+            // When we decelerate, we're trying to fill up the remaining entrances, so we loop through everything that gives us a priority.
+            for (int entrances = 1; entrances < _room_lib.entrance_max + 1; entrances++) // Start with small entrances
+            {
+                // a way to get a list of all rooms of a certain entrance.
+                List<Room> list_rooms_of_entrance = _room_lib.Get(entrances);
+                list_rooms_of_entrance.Reverse();
+                foreach (Room room in list_rooms_of_entrance)
+                {
+                    r = Instantiate<Room>(room);
+                    if (r.Add(current_rooms))
+                    {
+                        r.transform.parent = this.transform;
+                        if (r.is_spawn)
+                            spawn_rooms.Add(r);
+                        current_rooms.Add(r);
+                        UpdateAvailableEntrancesAll();
+                        NetworkServer.Spawn(r.gameObject);
+                        return;
+                    }
+                    else
+                    {
+                        Destroy(r.gameObject);
+                    }
+                }
+            }
+        }
+    }
 }
