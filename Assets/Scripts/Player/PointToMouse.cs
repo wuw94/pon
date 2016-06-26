@@ -4,10 +4,12 @@ using System.Collections;
 
 public class PointToMouse : NetworkBehaviour
 {
-    private void Update()
+    private void FixedUpdate()
     {
+        /*
         if (!isLocalPlayer)
             return;
+            */
         Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         // Get Angle in Radians
         float AngleRad = Mathf.Atan2(mouse.y - this.transform.position.y, mouse.x - this.transform.position.x);

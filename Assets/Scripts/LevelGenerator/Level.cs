@@ -198,7 +198,7 @@ public class Level : NetworkBehaviour
     /// <summary>
     /// When to stop accelerating. Don't make this bigger than _decelerate_at!
     /// </summary>
-    private int _accelerate_until = 10;
+    private int _accelerate_until = 20;
 
     /// <summary>
     /// When to start decelerating
@@ -221,12 +221,17 @@ public class Level : NetworkBehaviour
     public List<Room> spawn_rooms;
 
     private Dictionary<Team, Room> _spawn;
+
     [SyncVar]
     public Vector2 SpawnA;
 
     [SyncVar]
     public Vector2 SpawnB;
 
+    private void OnCompleteRooms()
+    {
+        FindObjectOfType<PlayerInfo>().RefreshVision();
+    }
 
     private void Awake()
     {
@@ -317,6 +322,8 @@ public class Level : NetworkBehaviour
                 if (spawn_rooms.Count >= Enum.GetValues(typeof(Team)).Length) // If our map is acceptable!
                 {
                     AssignSpawnRooms();
+                    CreateNucleus();
+                    OnCompleteRooms();
                     break;
                 }
                 else
@@ -368,6 +375,19 @@ public class Level : NetworkBehaviour
 
         SpawnA = _spawn[Team.A].transform.position;
         SpawnB = _spawn[Team.B].transform.position;
+    }
+
+    private void CreateNucleus()
+    {
+        Nucleus n = Instantiate<Nucleus>(Resources.Load<Nucleus>("Interface/Nucleus"));
+        n.transform.position = SpawnA + new Vector2(0.5f, 0.5f);
+        n.team = Team.A;
+        NetworkServer.Spawn(n.gameObject);
+
+        n = Instantiate<Nucleus>(Resources.Load<Nucleus>("Interface/Nucleus"));
+        n.transform.position = SpawnB + new Vector2(0.5f, 0.5f);
+        n.team = Team.B;
+        NetworkServer.Spawn(n.gameObject);
     }
 
     private void Accelerate()

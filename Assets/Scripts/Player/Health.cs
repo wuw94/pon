@@ -5,8 +5,9 @@ public class Health : MonoBehaviour
 {
     public PlayerInfo player;
     
-    void Update ()
+
+    private void Update ()
     {
-        transform.localScale = new Vector3(player.currentHealth / 10, 1, 1);
+        transform.localScale = new Vector3(player.current_health / 10, 1, 1);
 	}
 }

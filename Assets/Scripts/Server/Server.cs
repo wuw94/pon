@@ -29,7 +29,7 @@ public class Server : NetworkManager
         {
             int id = p[i].connectionToClient.connectionId;
             p[i].RpcUpdateConnections(connections, id);
-            p[i].RpcUpdateTeam(Team.Neutral);
+            //p[i].RpcUpdateTeam(Team.Neutral);
         }
     }
 
@@ -52,6 +52,10 @@ public class Server : NetworkManager
         prefabs = Resources.LoadAll<GameObject>("Interface");
         foreach (GameObject g in prefabs)
             ClientScene.RegisterPrefab(g);
+        prefabs = Resources.LoadAll<GameObject>("Player");
+        foreach (GameObject g in prefabs)
+            if (g.name != "Vision")
+                ClientScene.RegisterPrefab(g);
     }
 
     public override void OnClientConnect(NetworkConnection conn)

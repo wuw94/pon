@@ -17,14 +17,16 @@ public class PlayerInfo : NetworkBehaviour
     [SyncVar]
     public Team team;
 
-    public const int maxHealth = 100;
+    public const int max_health = 100;
     public bool display_name = false;
 
 
     [SyncVar]
-    public int currentHealth = maxHealth;
+    public int current_health = max_health;
 
-    
+    // a bool to check if we're currently standing on a nucleus
+    [SyncVar]
+    public bool on_nucleus = false;
 
 
     public void TakeDamage(int amount)
@@ -34,10 +36,10 @@ public class PlayerInfo : NetworkBehaviour
             return;
         }
 
-        currentHealth -= amount;
-        if (currentHealth <= 0)
+        current_health -= amount;
+        if (current_health <= 0)
         {
-            currentHealth = maxHealth;
+            current_health = max_health;
             RpcPortToSpawn();
         }
 
@@ -52,9 +54,9 @@ public class PlayerInfo : NetworkBehaviour
         base.OnStartLocalPlayer();
 
         //this.name = "Player " + this.connectionToClient.connectionId.ToString();
-        Instantiate(Resources.Load<GameObject>("Camera/Camera"));
-        Camera.main.GetComponent<LerpFollow>().target = this.transform;
-
+        AdjustLayer();
+        LocalCamera();
+        LocalVision();
     }
 
 
@@ -63,9 +65,28 @@ public class PlayerInfo : NetworkBehaviour
     {
         if (!isLocalPlayer)
             return;
+        
     }
 
+    private void AdjustLayer()
+    {
+        this.gameObject.layer = 5;
+        this.gameObject.GetComponentInChildren<Health>().gameObject.layer = 5;
+    }
 
+    private void LocalCamera()
+    {
+        Instantiate(Resources.Load<GameObject>("Camera/Camera (View Under)"));
+        Camera.main.GetComponent<LerpFollow>().target = this.transform;
+    }
+
+    private void LocalVision()
+    {
+        GameObject g = Instantiate(Resources.Load<GameObject>("Player/Vision"));
+        g.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, g.transform.position.z);
+        g.transform.rotation = this.transform.rotation;
+        g.transform.parent = this.transform;
+    }
 
 
     private void Update()
@@ -73,6 +94,13 @@ public class PlayerInfo : NetworkBehaviour
         if (!isLocalPlayer)
             return;
         UpdateColor();
+        if (Input.GetKeyDown(KeyCode.M))
+            RefreshVision();
+    }
+
+    public void RefreshVision()
+    {
+        FindObjectOfType<DynamicLight>().Rebuild();
     }
 
 
