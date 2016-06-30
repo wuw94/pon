@@ -198,7 +198,7 @@ public class Level : NetworkBehaviour
     /// <summary>
     /// When to stop accelerating. Don't make this bigger than _decelerate_at!
     /// </summary>
-    private int _accelerate_until = 20;
+    private int _accelerate_until = 70;
 
     /// <summary>
     /// When to start decelerating
@@ -230,7 +230,7 @@ public class Level : NetworkBehaviour
 
     private void OnCompleteRooms()
     {
-        FindObjectOfType<PlayerInfo>().RefreshVision();
+        FindObjectOfType<Player>().RefreshVision();
     }
 
     private void Awake()
@@ -290,7 +290,7 @@ public class Level : NetworkBehaviour
 
     private void CreateFirstRoom(Vector2 pos)
     {
-        Room r = Instantiate<Room>(_room_lib.GetRandom(8, new Vector2(2, 2)));
+        Room r = Instantiate<Room>(_room_lib.GetRandom(4, new Vector2(2, 2)));
 
         r.transform.parent = this.transform;
 

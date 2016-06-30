@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 /// <summary>
@@ -11,6 +12,9 @@ using System.Collections;
 /// </summary>
 public class Server : NetworkManager
 {
+
+    private string try_ip;
+
     /// <summary>
     /// Our list of connections (in int based on a connection's connectionId).
     /// </summary>
@@ -24,12 +28,11 @@ public class Server : NetworkManager
     /// </summary>
     private void UpdateConnections()
     {
-        PlayerInfo[] p = FindObjectsOfType<PlayerInfo>();
-        for (int i = 0; i < p.Length; i++)
+        GUIShowPlayers[] g = FindObjectsOfType<GUIShowPlayers>();
+        for (int i = 0; i < g.Length; i++)
         {
-            int id = p[i].connectionToClient.connectionId;
-            p[i].RpcUpdateConnections(connections, id);
-            //p[i].RpcUpdateTeam(Team.Neutral);
+            int id = g[i].connectionToClient.connectionId;
+            g[i].RpcUpdateConnections(connections, id);
         }
     }
 
@@ -57,6 +60,31 @@ public class Server : NetworkManager
             if (g.name != "Vision")
                 ClientScene.RegisterPrefab(g);
     }
+
+    private void Start()
+    {
+        try_ip = Network.player.ipAddress;
+    }
+
+    
+    private void OnGUI()
+    {
+        if (SceneManager.GetActiveScene().name == offlineScene)
+        {
+            try_ip = GUI.TextField(new Rect(10, 10, 150, 20), try_ip, 25);
+            if (GUI.Button(new Rect(160, 10, 50, 20), "Host"))
+            {
+                serverBindAddress = try_ip;
+                StartHost();
+            }
+            if (GUI.Button(new Rect(10, 30, 200, 20), "Join"))
+            {
+                networkAddress = try_ip;
+                StartClient();
+            }
+        }
+    }
+    
 
     public override void OnClientConnect(NetworkConnection conn)
     {

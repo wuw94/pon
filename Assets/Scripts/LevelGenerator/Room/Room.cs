@@ -133,11 +133,6 @@ public abstract class Room : MonoBehaviour
             _available_entrances_d[d] = GetEntrances(d).Count;
     }
 
-    private void OnMouseDown()
-    {
-        foreach (Vector2 e in this.GetEntrances(Direction.North))
-            Debug.Log(e);
-    }
 
     /// <summary>
     /// This room will attempt to put itself logically into the list of current_rooms. This involves moving itself
