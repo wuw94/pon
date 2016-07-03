@@ -7,6 +7,7 @@ public class RoomFadeAway : NetworkBehaviour
     public float color = 0;
     public GameObject NoLight;
 
+    /*
     private void Start()
     {
         StartCoroutine(Fade());
@@ -27,6 +28,7 @@ public class RoomFadeAway : NetworkBehaviour
             color = 0.5f;
         }
     }
+    */
 
     IEnumerator Fade()
     {

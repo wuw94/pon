@@ -20,7 +20,7 @@ public class Damager : NetworkTeam
         base.FixedUpdate();
     }
 
-    private void OnTriggerEnter2D(Collider2D col)
+    public virtual void OnTriggerEnter2D(Collider2D col)
     {
         if (!isServer)
             return;

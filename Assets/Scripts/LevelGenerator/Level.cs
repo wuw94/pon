@@ -198,7 +198,7 @@ public class Level : NetworkBehaviour
     /// <summary>
     /// When to stop accelerating. Don't make this bigger than _decelerate_at!
     /// </summary>
-    private int _accelerate_until = 70;
+    private int _accelerate_until = 20;
 
     /// <summary>
     /// When to start decelerating

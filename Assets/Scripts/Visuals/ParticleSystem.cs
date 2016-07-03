@@ -18,8 +18,12 @@ public class ParticleSystem : MonoBehaviour
         {
             if (source.GetTeam() != Team.Neutral)
             {
-                GameObject g = (GameObject)Instantiate(particle, this.transform.position, this.transform.rotation);
-                g.GetComponent<SpriteRenderer>().color = source.GetComponent<SpriteRenderer>().color;
+                Bullet b = GetComponent<Bullet>();
+                if (Vector2.Distance(b.startpoint, new Vector2(transform.position.x, transform.position.y)) <= b.distance)
+                {
+                    GameObject g = (GameObject)Instantiate(particle, this.transform.position, this.transform.rotation);
+                    g.GetComponent<SpriteRenderer>().color = source.GetComponent<SpriteRenderer>().color;
+                }
             }
             yield return new WaitForFixedUpdate();
         }

@@ -26,6 +26,7 @@ public class GUIShowPlayers : NetworkBehaviour
                     GUI.Label(new Rect(0, 220 + 20 * i, 300, 20), "------ No Player ------");
                 }
             GUI.Label(new Rect(80, 220 + 20 * networkID, 300, 20), "(You)");
+
         }
     }
 

@@ -15,5 +15,6 @@ public class Particle : MonoBehaviour
                                                             GetComponent<SpriteRenderer>().color.g,
                                                             GetComponent<SpriteRenderer>().color.b,
                                                             GetComponent<SpriteRenderer>().color.a - 0.01f);
+        transform.localScale = new Vector3(transform.localScale.x * 0.99f, transform.localScale.y, transform.localScale.z);
 	}
 }
