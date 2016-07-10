@@ -20,12 +20,13 @@ using System.Collections;
  */
 public abstract class NetworkTeam : NetworkBehaviour
 {
+    [SerializeField]
     [SyncVar(hook = "OnUpdateColor")] //[SyncVar(hook = "OnUpdateColor")]
     private Team _team = Team.Neutral; // What team this entity belongs to
 
-    protected readonly Color white = new Color(1, 1, 1, 1);
-    protected readonly Color blue = new Color(0.604f, 0.704f, 1, 1);
-    protected readonly Color red = new Color(1, 0.604f, 0.604f, 1);
+    public readonly Color white = new Color(1, 1, 1, 1);
+    public readonly Color blue = new Color(0.604f, 0.704f, 1, 1);
+    public readonly Color red = new Color(1, 0.604f, 0.604f, 1);
 
     public virtual void Start()
     {
@@ -81,7 +82,7 @@ public abstract class NetworkTeam : NetworkBehaviour
     protected virtual void UpdateColor()
     {
         if (hasAuthority)
-            GetComponent<SpriteRenderer>().color = white;
+            GetComponent<SpriteRenderer>().color = Color.cyan;
         else if (GetTeam() == Team.Neutral)
             GetComponent<SpriteRenderer>().color = Color.gray;
         else if (GetTeam() == Player.mine.GetTeam())

@@ -20,13 +20,17 @@ public class PlayerController : Player
 
     public override void FixedUpdate()
     {
+        // Running on all computers (server and client)
         if (IsDead())
             return;
+
+        // Are you a server
         if (isServer)
-            RegenHealth(0.2f);
+            RegenHealth(0.2f); // Don't do this if you're not a server
 
 
-        if (!isLocalPlayer)
+        
+        if (!isLocalPlayer) // Exit if you're not the computer running this Player
             return;
 
         
