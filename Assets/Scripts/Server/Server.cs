@@ -51,7 +51,8 @@ public class Server : NetworkManager
             ClientScene.RegisterPrefab(g);
         prefabs = Resources.LoadAll<GameObject>("Damagers");
         foreach (GameObject g in prefabs)
-            ClientScene.RegisterPrefab(g);
+            if (g.GetComponent<NetworkIdentity>() != null)
+                ClientScene.RegisterPrefab(g);
         prefabs = Resources.LoadAll<GameObject>("Interface");
         foreach (GameObject g in prefabs)
             ClientScene.RegisterPrefab(g);

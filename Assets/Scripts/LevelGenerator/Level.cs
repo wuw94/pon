@@ -290,7 +290,7 @@ public class Level : NetworkBehaviour
 
     private void CreateFirstRoom(Vector2 pos)
     {
-        Room r = Instantiate<Room>(_room_lib.GetRandom(4, new Vector2(2, 2)));
+        Room r = Instantiate<Room>(_room_lib.GetRandom(8, new Vector2(2, 2)));
 
         r.transform.parent = this.transform;
 
@@ -405,6 +405,7 @@ public class Level : NetworkBehaviour
             }
 
             int entrances = UnityEngine.Random.Range(2, _room_lib.entrance_max + 1); // Set our num entrances randomly (but within bounds)
+
             int s = UnityEngine.Random.Range(1, _room_lib.size_max + 1); // Set our size randomly (but within bounds)
             r = _room_lib.GetRandom(entrances, new Vector2(s, s)); // Try to create a room. This will be null if the specifications don't exist.
 

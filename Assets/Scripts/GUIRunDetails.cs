@@ -15,8 +15,9 @@ public class GUIRunDetails : NetworkBehaviour
 
     private void OnGUI()
     {
-        GUI.Label(new Rect(Screen.width - 100, 0, 100, 100), "FPS: " + (int)(1.0f / Time.smoothDeltaTime));
-        GUI.Label(new Rect(Screen.width - 100, 20, 100, 100), "Ping: " + _my_ping.time + "ms");
-        GUI.Label(new Rect(Screen.width - 100, 40, 100, 100), "Colliders: " + FindObjectsOfType<Collider2D>().Length);
+        GUI.Label(new Rect(Screen.width - 150, 0, 100, 100), "FPS: " + (int)(1.0f / Time.smoothDeltaTime));
+        GUI.Label(new Rect(Screen.width - 150, 20, 100, 100), "Ping: " + _my_ping.time + "ms");
+        GUI.Label(new Rect(Screen.width - 150, 40, 100, 100), "Objects: " + FindObjectsOfType<GameObject>().Length);
+        GUI.Label(new Rect(Screen.width - 150, 60, 100, 100), "Colliders: " + FindObjectsOfType<Collider2D>().Length);
     }
 }

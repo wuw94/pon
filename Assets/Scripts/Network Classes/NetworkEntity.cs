@@ -25,19 +25,9 @@ public abstract class NetworkEntity : NetworkTeam
     [SyncVar]
     public bool facing_right = false;
 
-    public override void Start()
+    public override void OnStartClient()
     {
-        base.Start();
-    }
-
-    public override void Update()
-    {
-        base.Update();
-    }
-
-    public override void FixedUpdate()
-    {
-        base.FixedUpdate();
+        base.OnStartClient();
     }
 
 
