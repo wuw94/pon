@@ -8,6 +8,6 @@ public class Health : MonoBehaviour
 
     private void Update ()
     {
-        transform.localScale = new Vector3(player.GetHealth() / 10.0f, 1, 1);
+        transform.localScale = new Vector3(player.character_manager.GetCurrentCharacter().GetHealth() / 10.0f, 1, 1);
 	}
 }

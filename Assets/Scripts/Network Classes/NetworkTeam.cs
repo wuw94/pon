@@ -38,7 +38,7 @@ using System.Collections;
 public abstract class NetworkTeam : NetworkBehaviour
 {
     [SerializeField]
-    [SyncVar(hook = "OnUpdateColor")] //[SyncVar(hook = "OnUpdateColor")]
+    [SyncVar(hook = "OnUpdateTeam")]
     private Team _team = Team.Neutral; // What team this entity belongs to
 
     protected readonly Color white = new Color(1, 1, 1, 1);
@@ -102,7 +102,7 @@ public abstract class NetworkTeam : NetworkBehaviour
     /// we must update the colors of everything else because their relative colors have changed.
     /// </summary>
     /// <param name="t"></param>
-    private void OnUpdateColor(Team t)
+    protected virtual void OnUpdateTeam(Team t)
     {
         _team = t;
         if (isLocalPlayer) // Our own team changed and therefore we must update the colors of everything else.

@@ -43,22 +43,9 @@ public class Server : NetworkManager
     /// </summary>
     private void RegisterPrefabs()
     {
-        GameObject[] prefabs = Resources.LoadAll<GameObject>("Rooms");
-        foreach (GameObject g in prefabs)
-            ClientScene.RegisterPrefab(g);
-        prefabs = Resources.LoadAll<GameObject>("SpawnRooms");
-        foreach (GameObject g in prefabs)
-            ClientScene.RegisterPrefab(g);
-        prefabs = Resources.LoadAll<GameObject>("Damagers");
+        GameObject[] prefabs = Resources.LoadAll<GameObject>("");
         foreach (GameObject g in prefabs)
             if (g.GetComponent<NetworkIdentity>() != null)
-                ClientScene.RegisterPrefab(g);
-        prefabs = Resources.LoadAll<GameObject>("Interface");
-        foreach (GameObject g in prefabs)
-            ClientScene.RegisterPrefab(g);
-        prefabs = Resources.LoadAll<GameObject>("Player");
-        foreach (GameObject g in prefabs)
-            if (g.name != "Vision")
                 ClientScene.RegisterPrefab(g);
     }
 

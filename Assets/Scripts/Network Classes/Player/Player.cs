@@ -3,56 +3,38 @@ using UnityEngine.Networking;
 using System.Collections;
 using System;
 
-public class Player : NetworkEntity
+public class Player : NetworkTeam
 {
     public static Player mine;
+    public CharacterManager character_manager;
+    public DynamicLight vision;
+    public Camera player_camera;
     
-    [SyncVar]
-    public bool on_nucleus = false;
-
-
-    public override void Start()
-    {
-        base.Start();
-    }
-
-    public override void Update()
-    {
-        base.Update();
-    }
-
-    public override void FixedUpdate()
-    {
-        base.FixedUpdate();
-    }
-
-
-    public override void Dead()
-    {
-        StartCoroutine(RespawnProcess());
-    }
-
-    IEnumerator RespawnProcess()
-    {
-        yield return new WaitForSeconds(5);
-        RpcPortToSpawn(GetTeam());
-        Revive();
-    }
-
 
     // Stuff to do just to a client player right when it loads
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
         Player.mine = this;
-        //this.name = "Player " + this.connectionToClient.connectionId.ToString();
+
         AdjustLayer();
         LocalCamera();
         LocalVision();
     }
 
+    public override void Update()
+    {
+        base.Update();
+        if (!isLocalPlayer)
+            return;
+        FaceMouse();
+    }
 
-    
+    protected override void OnTeamChanged()
+    {
+        base.OnTeamChanged();
+        character_manager.ChangeTeam(this.GetTeam());
+    }
 
     private void AdjustLayer()
     {
@@ -64,11 +46,13 @@ public class Player : NetworkEntity
     {
         Instantiate(Resources.Load<GameObject>("Camera/Camera (View Under)"));
         Camera.main.GetComponent<LerpFollow>().target = this.transform;
+        player_camera = Camera.main;
     }
 
     private void LocalVision()
     {
         GameObject g = Instantiate(Resources.Load<GameObject>("Player/Vision"));
+        vision = g.GetComponent<DynamicLight>();
         g.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, g.transform.position.z);
         g.transform.rotation = this.transform.rotation;
         g.transform.parent = this.transform;
@@ -79,21 +63,11 @@ public class Player : NetworkEntity
         FindObjectOfType<DynamicLight>().Rebuild();
     }
 
-
-    // -------------------------------------------------------  RPC  ------------------------------------------------------------
-
-    
-
-    [ClientRpc]
-    public void RpcPortToSpawn(Team t)
+    public void FaceMouse()
     {
-        if (!isLocalPlayer)
-            return;
-        
-        Level level = FindObjectOfType<Level>();
-        if (t == Team.A)
-            transform.position = level.SpawnA + new Vector2(1, 1);
-        if (t == Team.B)
-            transform.position = level.SpawnB + new Vector2(1, 1);
+        Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        float AngleRad = Mathf.Atan2(mouse.y - this.transform.position.y, mouse.x - this.transform.position.x);
+        float AngleDeg = (180 / Mathf.PI) * AngleRad;
+        transform.rotation = Quaternion.Euler(0, 0, AngleDeg - 90);
     }
 }

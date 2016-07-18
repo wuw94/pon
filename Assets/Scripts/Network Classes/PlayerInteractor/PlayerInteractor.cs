@@ -41,11 +41,14 @@ public class PlayerInteractor : NetworkTeam
             return;
         if (col.gameObject.tag == "Player")
         {
+            
             Player p = col.gameObject.GetComponent<Player>();
             if (p.GetTeam() == this.GetTeam())
                 allies_held.Add(p);
             else
+            {
                 enemies_held.Add(p);
+            }
         }
     }
 

@@ -17,7 +17,7 @@ public class PortToSpawn : NetworkBehaviour
             if (FindObjectOfType<Level>().done)
             {
                 col.gameObject.GetComponent<Player>().ChangeTeam(team);
-                col.gameObject.GetComponent<Player>().RpcPortToSpawn(team);
+                col.gameObject.GetComponent<Player>().character_manager.GetCurrentCharacter().RpcPortToSpawn(team);
             }
         }
     }

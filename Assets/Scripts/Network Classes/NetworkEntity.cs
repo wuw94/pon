@@ -14,24 +14,13 @@ using UnityEngine.Networking;
  */
 public abstract class NetworkEntity : NetworkTeam
 {
-    public const int max_health = 100;
+    public abstract float max_health { get; set; }
 
     [SyncVar]
-    private float _current_health = max_health;
+    private float _current_health = 100;
 
     [SyncVar(hook = "OnDead")]
     private bool _is_dead = false;
-
-    [SyncVar]
-    public bool facing_right = false;
-
-    public override void OnStartClient()
-    {
-        base.OnStartClient();
-    }
-
-
-
 
     public float GetHealth()
     {
@@ -42,8 +31,6 @@ public abstract class NetworkEntity : NetworkTeam
     {
         return _is_dead;
     }
-
-    
     
     public void ChangeHealth(float amount)
     {

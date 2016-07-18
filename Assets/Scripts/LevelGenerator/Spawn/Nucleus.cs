@@ -22,7 +22,7 @@ public class Nucleus : NetworkBehaviour
             return;
         if (col.tag == "Player")
         {
-            col.GetComponent<Player>().on_nucleus = true;
+            //col.GetComponent<Player>().on_nucleus = true;
             if (col.GetComponent<Player>().GetTeam() == this.team)
             {
                 num_repairing++;
@@ -40,7 +40,7 @@ public class Nucleus : NetworkBehaviour
             return;
         if (col.tag == "Player")
         {
-            col.GetComponent<Player>().on_nucleus = false;
+            //col.GetComponent<Player>().on_nucleus = false;
             if (col.GetComponent<Player>().GetTeam() == this.team)
             {
                 num_repairing--;

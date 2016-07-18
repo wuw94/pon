@@ -13,11 +13,11 @@ public class Damager : PlayerInteractor
 
     public void DamagePlayer(Player p)
     {
-        p.ChangeHealth(-damage);
+        p.character_manager.GetCurrentCharacter().ChangeHealth(-damage);
     }
 
     public void DamagePlayer(Player p, float percentage)
     {
-        p.ChangeHealth(-damage * percentage);
+        p.character_manager.GetCurrentCharacter().ChangeHealth(-damage * percentage);
     }
 }
