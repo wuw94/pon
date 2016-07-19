@@ -129,7 +129,7 @@ public abstract class NetworkTeam : NetworkBehaviour
             OnDisplayMine();
         else if (GetTeam() == Team.Neutral)
             OnDisplayNeutral();
-        else if (GetTeam() == Player.mine.GetTeam())
+        else if (GetTeam() == Player.mine.character.GetTeam())
             OnDisplayAlly();
         else
             OnDisplayEnemy();

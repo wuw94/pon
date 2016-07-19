@@ -72,10 +72,10 @@ public class Bullet : Damager
             OnHitWall();
     }
 
-    public override void DoToEnemy(Player p)
+    public override void DoToEnemy(Character c)
     {
         RaycastHit2D ray_to_player;
-        Physics2DExtension.Raycast(p.GetComponent<Collider2D>(), new Ray2D(_start_point, _direction * Vector2.up), out ray_to_player, _max_distance);
+        Physics2DExtension.Raycast(c.GetComponent<Collider2D>(), new Ray2D(_start_point, _direction * Vector2.up), out ray_to_player, _max_distance);
 
         if (ray_to_player)
         {
@@ -86,10 +86,10 @@ public class Bullet : Damager
 
         // do the damage
         if (_damage_fall_off)
-            if (_max_distance - Vector2.Distance(p.transform.position, _start_point) > 0)
-                DamagePlayer(p, (_max_distance - Vector2.Distance(p.transform.position, _start_point)) / _max_distance);
+            if (_max_distance - Vector2.Distance(c.transform.position, _start_point) > 0)
+                DamagePlayer(c, (_max_distance - Vector2.Distance(c.transform.position, _start_point)) / _max_distance);
         else
-            DamagePlayer(p);
+            DamagePlayer(c);
         damage = 0; // set it to zero so it doesn't damage multiple things
     }
 

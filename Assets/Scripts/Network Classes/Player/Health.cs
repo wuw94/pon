@@ -3,11 +3,11 @@ using System.Collections;
 
 public class Health : MonoBehaviour
 {
-    public Player player;
+    public Character character;
     
 
     private void Update ()
     {
-        transform.localScale = new Vector3(player.character_manager.GetCurrentCharacter().GetHealth() / 10.0f, 1, 1);
+        transform.localScale = new Vector3(character.GetHealth() / 10.0f, 1, 1);
 	}
 }

@@ -4,6 +4,10 @@ using System.Collections;
 
 public abstract class Character : NetworkEntity
 {
+    private DynamicLight vision;
+    private Camera main_camera;
+
+
     public abstract float max_speed { get; set; }
     protected bool can_move = true;
     protected Ability primary;
@@ -13,6 +17,8 @@ public abstract class Character : NetworkEntity
     [SyncVar]
     public bool active = false;
 
+    // ------------------------------------------------- Unity Overrides -------------------------------------------------
+
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -21,27 +27,60 @@ public abstract class Character : NetworkEntity
         skill2 = new Ability(KeyCode.Space);
     }
 
+    public override void OnStartAuthority()
+    {
+        base.OnStartAuthority();
+        AdjustLayer();
+        LocalCamera();
+        LocalVision();
+    }
 
     public override void FixedUpdate()
     {
         if (isServer)
             Passive();
-        if (isLocalPlayer)
+        if (hasAuthority)
         {
+            FaceMouse();
             CheckMovementInputs();
             CheckSkillInputs();
-            if (Input.GetKeyDown(KeyCode.LeftControl))
-            {
-                Debug.LogError(GetTeam());
-                Debug.LogError(Player.mine.GetTeam());
-            }
         }
     }
 
+    // ------------------------------------------------- Setup -------------------------------------------------
+
+    private void AdjustLayer()
+    {
+        this.gameObject.layer = 5;
+        this.GetComponentInChildren<Health>().gameObject.layer = 5;
+    }
+
+    private void LocalCamera()
+    {
+        if (FindObjectOfType<Camera>() == null)
+            Instantiate(Resources.Load<GameObject>("Camera/Camera (View Under)"));
+        Camera.main.GetComponent<LerpFollow>().target = this.transform;
+        main_camera = Camera.main;
+    }
+
+    private void LocalVision()
+    {
+        GameObject g = Instantiate(Resources.Load<GameObject>("Player/Vision"));
+        vision = g.GetComponent<DynamicLight>();
+        g.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, g.transform.position.z);
+        g.transform.parent = this.transform;
+        RefreshVision();
+    }
+
+    public void RefreshVision()
+    {
+        vision.Rebuild();
+    }
+
+    // ------------------------------------------------- Check Inputs -------------------------------------------------
+
     private void CheckMovementInputs()
     {
-        if (!isLocalPlayer)
-            return;
         if (Input.GetKey(KeyCode.W))
             Move(Camera.main.transform.rotation * Vector2.up);
         if (Input.GetKey(KeyCode.S))
@@ -91,16 +130,22 @@ public abstract class Character : NetworkEntity
     public abstract void Skill1();
     public abstract void Skill2();
 
-    
+    // ------------------------------------------------- Helper Functions -------------------------------------------------
 
     protected float GetMouseDirection()
     {
+        if (Camera.main == null)
+            return 0;
         Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         float AngleRad = Mathf.Atan2(mouse.y - this.transform.position.y, mouse.x - this.transform.position.x);
         float AngleDeg = (180 / Mathf.PI) * AngleRad;
         return AngleDeg - 90;
     }
 
+    public void FaceMouse()
+    {
+        transform.rotation = Quaternion.Euler(0, 0, GetMouseDirection());
+    }
 
     public override void Dead()
     {
@@ -114,6 +159,12 @@ public abstract class Character : NetworkEntity
         Revive();
     }
 
+
+
+
+
+
+    // ------------------------------------------------- Network Sending -------------------------------------------------
 
     [Command]
     protected void CmdSpawn(GameObject g, Team t)
@@ -136,7 +187,7 @@ public abstract class Character : NetworkEntity
     [ClientRpc]
     public void RpcPortToSpawn(Team t)
     {
-        if (!isLocalPlayer)
+        if (!hasAuthority)
             return;
 
         Level level = FindObjectOfType<Level>();

@@ -63,11 +63,6 @@ public class Level : NetworkBehaviour
     private int _accelerate_until = 4;
 
     /// <summary>
-    /// When to start decelerating
-    /// </summary>
-    private int _decelerate_at = 10;
-
-    /// <summary>
     /// How many times we've tried generating a room.
     /// </summary>
     private int _generation_count; // Unused
@@ -92,7 +87,7 @@ public class Level : NetworkBehaviour
 
     private void OnCompleteRooms()
     {
-        FindObjectOfType<Player>().RefreshVision();
+        FindObjectOfType<Character>().RefreshVision();
         foreach (Room r in current_rooms)
         {
             Transform dl = r.transform.Find("2DLight");

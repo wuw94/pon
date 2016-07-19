@@ -4,8 +4,6 @@ using System.Collections;
 
 public class GUIShowPlayers : NetworkBehaviour
 {
-    public Player player;
-
     // For GUI
     public int[] connections = new int[10];
     public int num_connections = 0;

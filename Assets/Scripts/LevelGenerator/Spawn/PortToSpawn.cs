@@ -8,7 +8,7 @@ public class PortToSpawn : NetworkBehaviour
 
     private void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.tag == "Player")
+        if (col.GetComponent<Character>() != null)
         {
             //col.gameObject.GetComponent<PlayerInfo>().CmdUpdateTeam(team);
             //col.gameObject.GetComponent<PlayerController>().PortToSpawn();
@@ -16,8 +16,8 @@ public class PortToSpawn : NetworkBehaviour
                 return;
             if (FindObjectOfType<Level>().done)
             {
-                col.gameObject.GetComponent<Player>().ChangeTeam(team);
-                col.gameObject.GetComponent<Player>().character_manager.GetCurrentCharacter().RpcPortToSpawn(team);
+                col.gameObject.GetComponent<Character>().ChangeTeam(team);
+                col.gameObject.GetComponent<Character>().RpcPortToSpawn(team);
             }
         }
     }

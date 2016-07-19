@@ -6,18 +6,18 @@ public class Damager : PlayerInteractor
 {
     public float damage = 0;
 
-    public override void DoToEnemy(Player p)
+    public override void DoToEnemy(Character c)
     {
-        base.DoToEnemy(p);
+        base.DoToEnemy(c);
     }
 
-    public void DamagePlayer(Player p)
+    public void DamagePlayer(Character c)
     {
-        p.character_manager.GetCurrentCharacter().ChangeHealth(-damage);
+        c.ChangeHealth(-damage);
     }
 
-    public void DamagePlayer(Player p, float percentage)
+    public void DamagePlayer(Character c, float percentage)
     {
-        p.character_manager.GetCurrentCharacter().ChangeHealth(-damage * percentage);
+        c.ChangeHealth(-damage * percentage);
     }
 }

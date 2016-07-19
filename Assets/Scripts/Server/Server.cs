@@ -2,6 +2,8 @@
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using UnityEngine.Networking.Match;
+using System.Collections.Generic;
 
 /// <summary>
 /// Server.
@@ -57,6 +59,7 @@ public class Server : NetworkManager
     
     private void OnGUI()
     {
+        /*
         if (SceneManager.GetActiveScene().name == offlineScene)
         {
             try_ip = GUI.TextField(new Rect(10, 10, 150, 20), try_ip, 25);
@@ -71,6 +74,19 @@ public class Server : NetworkManager
                 StartClient();
             }
         }
+        */
+        /*
+        if (GUI.Button(new Rect(160, 10, 50, 20), "Host"))
+        {
+            StartMatchMaker();
+            StartHost(matchInfo);
+            StartClient(matchInfo);
+        }
+        if (GUI.Button(new Rect(10, 30, 200, 20), "Join"))
+        {
+        }
+        //Debug.Log(matches);
+        */
     }
     
 
@@ -163,6 +179,24 @@ public class Server : NetworkManager
     {
         base.OnStartHost();
         Debug.Log("OnStartHost");
+    }
+
+    public override void OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo)
+    {
+        base.OnMatchCreate(success, extendedInfo, matchInfo);
+        Debug.Log("OnMatchCreate");
+    }
+
+    public override void OnMatchJoined(bool success, string extendedInfo, MatchInfo matchInfo)
+    {
+        base.OnMatchJoined(success, extendedInfo, matchInfo);
+        Debug.Log("OnMatchJoined");
+    }
+
+    public override void OnMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)
+    {
+        base.OnMatchList(success, extendedInfo, matchList);
+        Debug.Log("OnMatchList");
     }
 
     public override void OnStartServer()

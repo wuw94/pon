@@ -12,13 +12,13 @@ public class Rockjaw : Character
     // Primary Weapon
     private const float max_distance = 10;
     private const float speed = 100;
-    private const float damage = 10;
+    private const float damage = 50;
     private const bool damage_fall_off = true;
-    private const float _primary_cooldown = 0.2f;
+    private const float _primary_cooldown = 0.15f;
     public GameObject projectile;
 
     // Skill 1 (Dash)
-    private const float _skill1_cooldown = 0.5f;
+    private const float _skill1_cooldown = 0.4f;
 
     // Skill 2 (Unload)
     private const float _skill2_cooldown = 2.0f;
@@ -45,14 +45,15 @@ public class Rockjaw : Character
     // Shotgun
     public override void PrimaryAttack()
     {
-        if (!isLocalPlayer)
+        if (!hasAuthority)
             return;
 
         CmdFireToward(GetMouseDirection());
+        /*
         for (int i = 0; i < 10; i++)
             CmdFireToward(GetMouseDirection() + UnityEngine.Random.Range(-10,10));
-
-        GetComponent<Rigidbody2D>().velocity = Quaternion.Euler(0, 0, GetMouseDirection()) * Vector2.down * 10;
+        */
+        GetComponent<Rigidbody2D>().velocity = Quaternion.Euler(0, 0, GetMouseDirection()) * Vector2.down * 5;
     }
 
     [Command]
@@ -70,6 +71,7 @@ public class Rockjaw : Character
     // Dash
     public override void Skill1()
     {
+        /*
         Move(Camera.main.transform.rotation * Vector2.up);
         Vector3 dir = Vector2.zero;
         if (Input.GetKey(KeyCode.W))
@@ -85,8 +87,6 @@ public class Rockjaw : Character
         else
             StartCoroutine(Dash(dir));
         
-        /*
-        StartCoroutine(Dash(Quaternion.Euler(0, 0, GetMouseDirection()) * Vector2.up));
         */
     }
 
@@ -105,7 +105,9 @@ public class Rockjaw : Character
     // Unload
     public override void Skill2()
     {
+        /*
         StartCoroutine(Unload());
+        */
     }
 
     private IEnumerator Unload()

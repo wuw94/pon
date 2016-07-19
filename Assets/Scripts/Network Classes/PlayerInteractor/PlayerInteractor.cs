@@ -8,27 +8,27 @@ public class PlayerInteractor : NetworkTeam
     /// <summary>
     /// Allies inside the PlayerInteractor's collider trigger
     /// </summary>
-    protected List<Player> allies_held = new List<Player>();
+    protected List<Character> allies_held = new List<Character>();
 
     /// <summary>
     /// Enemies inside the PlayerInteractor's collider trigger
     /// </summary>
-    protected List<Player> enemies_held = new List<Player>();
+    protected List<Character> enemies_held = new List<Character>();
 
     public override void Update()
     {
-        foreach (Player p in allies_held)
-            DoToAlly(p);
-        foreach (Player p in enemies_held)
-            DoToEnemy(p);
+        foreach (Character c in allies_held)
+            DoToAlly(c);
+        foreach (Character c in enemies_held)
+            DoToEnemy(c);
     }
 
-    public virtual void DoToAlly(Player p)
+    public virtual void DoToAlly(Character c)
     {
 
     }
 
-    public virtual void DoToEnemy(Player p)
+    public virtual void DoToEnemy(Character c)
     {
 
     }
@@ -39,15 +39,15 @@ public class PlayerInteractor : NetworkTeam
             return;
         if (this.GetTeam() == Team.Neutral)
             return;
-        if (col.gameObject.tag == "Player")
+        if (col.GetComponent<Character>() != null)
         {
             
-            Player p = col.gameObject.GetComponent<Player>();
-            if (p.GetTeam() == this.GetTeam())
-                allies_held.Add(p);
+            Character c = col.GetComponent<Character>();
+            if (c.GetTeam() == this.GetTeam())
+                allies_held.Add(c);
             else
             {
-                enemies_held.Add(p);
+                enemies_held.Add(c);
             }
         }
     }
@@ -58,13 +58,13 @@ public class PlayerInteractor : NetworkTeam
             return;
         if (this.GetTeam() == Team.Neutral)
             return;
-        if (col.gameObject.tag == "Player")
+        if (col.GetComponent<Character>() != null)
         {
-            Player p = col.gameObject.GetComponent<Player>();
-            if (p.GetTeam() == this.GetTeam())
-                allies_held.Remove(p);
+            Character c = col.GetComponent<Character>();
+            if (c.GetTeam() == this.GetTeam())
+                allies_held.Remove(c);
             else
-                enemies_held.Remove(p);
+                enemies_held.Remove(c);
         }
     }
     

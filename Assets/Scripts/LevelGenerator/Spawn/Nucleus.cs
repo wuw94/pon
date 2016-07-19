@@ -20,10 +20,10 @@ public class Nucleus : NetworkBehaviour
     {
         if (!isServer)
             return;
-        if (col.tag == "Player")
+        if (col.GetComponent<Character>() != null)
         {
             //col.GetComponent<Player>().on_nucleus = true;
-            if (col.GetComponent<Player>().GetTeam() == this.team)
+            if (col.GetComponent<Character>().GetTeam() == this.team)
             {
                 num_repairing++;
             }
@@ -38,10 +38,10 @@ public class Nucleus : NetworkBehaviour
     {
         if (!isServer)
             return;
-        if (col.tag == "Player")
+        if (col.GetComponent<Character>() != null)
         {
             //col.GetComponent<Player>().on_nucleus = false;
-            if (col.GetComponent<Player>().GetTeam() == this.team)
+            if (col.GetComponent<Character>().GetTeam() == this.team)
             {
                 num_repairing--;
             }

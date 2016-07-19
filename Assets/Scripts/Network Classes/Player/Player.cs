@@ -3,71 +3,71 @@ using UnityEngine.Networking;
 using System.Collections;
 using System;
 
-public class Player : NetworkTeam
+/* Player.
+ * 
+ * The Player class is the manager for a player. Each client joining to play
+ * has one of these.
+ */
+public class Player : NetworkBehaviour
 {
     public static Player mine;
-    public CharacterManager character_manager;
-    public DynamicLight vision;
-    public Camera player_camera;
-    
+
+    public Character character
+    {
+        get
+        {
+            if (ClientScene.FindLocalObject(character_id) == null)
+                return null;
+            return ClientScene.FindLocalObject(character_id).GetComponent<Character>();
+        }
+    }
+
+    [SerializeField]
+    private GameObject[] possible_characters;
+
+    [SyncVar]
+    private NetworkInstanceId character_id;
+
 
     // Stuff to do just to a client player right when it loads
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
         Player.mine = this;
-
-        AdjustLayer();
-        LocalCamera();
-        LocalVision();
+        CmdMakeCharacter(0);
     }
 
-    public override void Update()
+    public void OnGUI()
     {
-        base.Update();
         if (!isLocalPlayer)
             return;
-        FaceMouse();
+        if (character == null)
+            return;
+        if (character.GetTeam() != Team.Neutral)
+            return;
+        GUI.Label(new Rect(Screen.width / 2 - 100, 20, 300, 20), "Choose your Character");
+        for (int i = 0; i < possible_characters.Length; i++)
+        {
+            if (GUI.Button(new Rect(Screen.width / 2 - 50, 80 + 20 * i, 100, 20), possible_characters[i].name))
+            {
+                CmdDestroyCharacter(character_id);
+                CmdMakeCharacter(i);
+            }
+        }
     }
 
-    protected override void OnTeamChanged()
+    [Command]
+    public void CmdMakeCharacter(int index)
     {
-        base.OnTeamChanged();
-        character_manager.ChangeTeam(this.GetTeam());
+        GameObject g = Instantiate<GameObject>(possible_characters[index]);
+        g.transform.position = transform.position;
+        NetworkServer.SpawnWithClientAuthority(g, this.gameObject);
+        character_id = g.GetComponent<NetworkBehaviour>().netId;
     }
-
-    private void AdjustLayer()
+    
+    [Command]
+    public void CmdDestroyCharacter(NetworkInstanceId id)
     {
-        this.gameObject.layer = 5;
-        this.gameObject.GetComponentInChildren<Health>().gameObject.layer = 5;
-    }
-
-    private void LocalCamera()
-    {
-        Instantiate(Resources.Load<GameObject>("Camera/Camera (View Under)"));
-        Camera.main.GetComponent<LerpFollow>().target = this.transform;
-        player_camera = Camera.main;
-    }
-
-    private void LocalVision()
-    {
-        GameObject g = Instantiate(Resources.Load<GameObject>("Player/Vision"));
-        vision = g.GetComponent<DynamicLight>();
-        g.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, g.transform.position.z);
-        g.transform.rotation = this.transform.rotation;
-        g.transform.parent = this.transform;
-    }
-
-    public void RefreshVision()
-    {
-        FindObjectOfType<DynamicLight>().Rebuild();
-    }
-
-    public void FaceMouse()
-    {
-        Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        float AngleRad = Mathf.Atan2(mouse.y - this.transform.position.y, mouse.x - this.transform.position.x);
-        float AngleDeg = (180 / Mathf.PI) * AngleRad;
-        transform.rotation = Quaternion.Euler(0, 0, AngleDeg - 90);
+        Destroy(NetworkServer.FindLocalObject(id));
     }
 }
