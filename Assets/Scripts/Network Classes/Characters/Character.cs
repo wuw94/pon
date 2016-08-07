@@ -2,18 +2,28 @@
 using UnityEngine.Networking;
 using System.Collections;
 
+/// <summary>
+/// Class for managing a character. Characters are objects that represent a player.
+/// </summary>
 public abstract class Character : NetworkEntity
 {
+    public Player player;
+
+    [SyncVar(hook = "OnUpdatePlayerId")]
+    public NetworkInstanceId player_id;
+
+
     private DynamicLight vision;
     private Camera main_camera;
-
-
+    
     public abstract float max_speed { get; set; }
     protected bool can_move = true;
     protected Ability primary;
     protected Ability skill1;
     protected Ability skill2;
-    
+
+    public bool dash_toward_mouse = false;
+
     [SyncVar]
     public bool active = false;
 
@@ -30,6 +40,7 @@ public abstract class Character : NetworkEntity
     public override void OnStartAuthority()
     {
         base.OnStartAuthority();
+        
         AdjustLayer();
         LocalCamera();
         LocalVision();
@@ -41,10 +52,23 @@ public abstract class Character : NetworkEntity
             Passive();
         if (hasAuthority)
         {
+            if (IsDead())
+                return;
             FaceMouse();
             CheckMovementInputs();
             CheckSkillInputs();
         }
+    }
+
+    public void OnGUI()
+    {
+        if (Player.mine.character != this)
+            return;
+        GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height - 80, 300, 100), "Your Health: " + (int)GetHealth() + " / " + (int)max_health);
+
+        GUI.Label(new Rect(Screen.width / 2 - 100, Screen.height - 60, 300, 100), skill1.ToString());
+
+        GUI.Label(new Rect(Screen.width / 2 + 30, Screen.height - 60, 300, 100), skill2.ToString());
     }
 
     // ------------------------------------------------- Setup -------------------------------------------------
@@ -65,7 +89,7 @@ public abstract class Character : NetworkEntity
 
     private void LocalVision()
     {
-        GameObject g = Instantiate(Resources.Load<GameObject>("Player/Vision"));
+        GameObject g = Instantiate(Resources.Load<GameObject>("Characters/Vision"));
         vision = g.GetComponent<DynamicLight>();
         g.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, g.transform.position.z);
         g.transform.parent = this.transform;
@@ -142,7 +166,7 @@ public abstract class Character : NetworkEntity
         return AngleDeg - 90;
     }
 
-    public void FaceMouse()
+    protected void FaceMouse()
     {
         transform.rotation = Quaternion.Euler(0, 0, GetMouseDirection());
     }
@@ -166,6 +190,12 @@ public abstract class Character : NetworkEntity
 
     // ------------------------------------------------- Network Sending -------------------------------------------------
 
+    /// <summary>
+    /// Spawn an object on the server. Make sure you only call this on the server,
+    /// or else the GameObject won't be passed!
+    /// </summary>
+    /// <param name="g"></param>
+    /// <param name="t"></param>
     [Command]
     protected void CmdSpawn(GameObject g, Team t)
     {
@@ -190,10 +220,18 @@ public abstract class Character : NetworkEntity
         if (!hasAuthority)
             return;
 
-        Level level = FindObjectOfType<Level>();
+        BaseModule base_module = FindObjectOfType<BaseModule>();
         if (t == Team.A)
-            transform.position = level.SpawnA + new Vector2(1, 1);
+            transform.position = base_module.SpawnA;
         if (t == Team.B)
-            transform.position = level.SpawnB + new Vector2(1, 1);
+            transform.position = base_module.SpawnB;
+    }
+
+    private void OnUpdatePlayerId(NetworkInstanceId id)
+    {
+        player_id = id;
+        if (ClientScene.FindLocalObject(player_id) == null)
+            player = null;
+        player = ClientScene.FindLocalObject(player_id).GetComponent<Player>();
     }
 }

@@ -9,7 +9,7 @@ public class BulletHit : MonoBehaviour
     private void Start()
     {
         StartCoroutine(FadeAway());
-        Destroy(this.gameObject, 1);
+        Destroy(this.gameObject, 0.7f);
     }
 
     private IEnumerator FadeAway()

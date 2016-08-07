@@ -12,6 +12,10 @@ using UnityEngine.Networking;
  * 
  * auth Wesley Wu
  */
+
+/// <summary>
+/// Class for managing entities. Entities are objects that have health and can die.
+/// </summary>
 public abstract class NetworkEntity : NetworkTeam
 {
     public abstract float max_health { get; set; }

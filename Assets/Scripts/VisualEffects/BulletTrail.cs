@@ -1,19 +1,16 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 using System.Collections;
 
-public class BulletTrail : MonoBehaviour
+public class BulletTrail : NetworkBehaviour
 {
-    public float speed;
+    public RaycastHit2D ray;
     public float distance;
-    public bool main;
-    public Bullet source;
 
     private void Start()
     {
-        if (main)
-            transform.localScale = new Vector3(transform.localScale.x, 0, transform.localScale.z); // distance * 5
         StartCoroutine(FadeAway());
-        Destroy(this.gameObject, 0.8f);
+        Destroy(this.gameObject, 0.7f);
     }
 
     private IEnumerator FadeAway()
@@ -21,22 +18,10 @@ public class BulletTrail : MonoBehaviour
         float fade_away = Random.Range(0.04f, 0.08f);
         while (true)
         {
-            if (source != null && source.GetComponent<SpriteRenderer>() != null)
-            {
-                GetComponent<SpriteRenderer>().color = new Color(source.GetComponent<SpriteRenderer>().color.r,
-                                                                    source.GetComponent<SpriteRenderer>().color.g,
-                                                                    source.GetComponent<SpriteRenderer>().color.b,
-                                                                    GetComponent<SpriteRenderer>().color.a - fade_away);
-            }
-            else
-            {
-                GetComponent<SpriteRenderer>().color = new Color(GetComponent<SpriteRenderer>().color.r,
-                                                                    GetComponent<SpriteRenderer>().color.g,
-                                                                    GetComponent<SpriteRenderer>().color.b,
-                                                                    GetComponent<SpriteRenderer>().color.a - fade_away);
-            }
-            if (main)
-                transform.localScale = new Vector3(transform.localScale.x * 0.99f, Mathf.Clamp(transform.localScale.y + speed / 60, 0, distance), transform.localScale.z);
+            GetComponent<SpriteRenderer>().color = new Color(GetComponent<SpriteRenderer>().color.r,
+                                                                GetComponent<SpriteRenderer>().color.g,
+                                                                GetComponent<SpriteRenderer>().color.b,
+                                                                GetComponent<SpriteRenderer>().color.a - fade_away);
             yield return new WaitForSeconds(0.01f);
         }
     }

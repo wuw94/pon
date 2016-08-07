@@ -10,6 +10,7 @@ public struct InputType
 
 public class Ability
 {
+    public string name = "";
     private InputType input;
     private float _time_stamp;
     private float _cooldown = 0;
@@ -47,6 +48,13 @@ public class Ability
         return _time_stamp <= Time.time;
     }
     
+    public float Remaining()
+    {
+        if (!Ready())
+            return _time_stamp - Time.time;
+        return 0;
+    }
+
     public void Use()
     {
         _time_stamp = Time.time + _cooldown;
@@ -55,5 +63,12 @@ public class Ability
     public void Reset()
     {
         _time_stamp = Time.time;
+    }
+
+    public override string ToString()
+    {
+        if (Ready())
+            return name + ": [Ready]";
+        return name + ": [" + (int)Remaining() + "]";
     }
 }

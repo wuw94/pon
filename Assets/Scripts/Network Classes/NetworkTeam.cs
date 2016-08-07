@@ -35,6 +35,10 @@ using System.Collections;
  * 
  * auth Wesley Wu
  */
+
+/// <summary>
+/// Class for managing an object's team.
+/// </summary>
 public abstract class NetworkTeam : NetworkBehaviour
 {
     [SerializeField]
@@ -105,7 +109,7 @@ public abstract class NetworkTeam : NetworkBehaviour
     protected virtual void OnUpdateTeam(Team t)
     {
         _team = t;
-        if (isLocalPlayer) // Our own team changed and therefore we must update the colors of everything else.
+        if (this == Player.mine.character) // Our own team changed and therefore we must update the colors of everything else.
             LocalUpdateColorAll();
         else
             UpdateColor();
@@ -117,7 +121,7 @@ public abstract class NetworkTeam : NetworkBehaviour
     /// </summary>
     private void LocalUpdateColorAll() // This is for when your own team changes.
     {
-        if (!isLocalPlayer)
+        if (this != Player.mine.character)
             Debug.LogWarning("You're updating colors of all objects, but not for the local player. Beware, this is a costly function");
         foreach (NetworkTeam obj in FindObjectsOfType<NetworkTeam>())
             obj.UpdateColor();
@@ -125,14 +129,16 @@ public abstract class NetworkTeam : NetworkBehaviour
 
     private void UpdateColor()
     {
-        if (hasAuthority)
-            OnDisplayMine();
-        else if (GetTeam() == Team.Neutral)
+        if (Player.mine == null)
+            return;
+        if (GetTeam() == Team.Neutral)
             OnDisplayNeutral();
         else if (GetTeam() == Player.mine.character.GetTeam())
             OnDisplayAlly();
         else
             OnDisplayEnemy();
+        if (hasAuthority)
+            OnDisplayMine();
     }
 
     /// <summary>
