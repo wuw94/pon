@@ -20,6 +20,9 @@ public class Player : NetworkBehaviour
 
     public Character character;
 
+    [SyncVar]
+    public string player_name;
+
     [SerializeField]
     private GameObject[] possible_characters;
 
@@ -31,6 +34,7 @@ public class Player : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
+        CmdSetName(FindObjectOfType<Server>().player_name);
         Player.mine = this;
         if (isServer && isClient)
             host = this;
@@ -55,6 +59,7 @@ public class Player : NetworkBehaviour
             }
         }
     }
+    
 
     [Command]
     public void CmdMakeCharacter(int index)
@@ -77,6 +82,13 @@ public class Player : NetworkBehaviour
         this.character_id = id;
         if (ClientScene.FindLocalObject(character_id) == null)
             this.character = null;
-        this.character = ClientScene.FindLocalObject(character_id).GetComponent<Character>();
+        else
+            this.character = ClientScene.FindLocalObject(character_id).GetComponent<Character>();
+    }
+
+    [Command]
+    public void CmdSetName(string player_name)
+    {
+        this.player_name = player_name;
     }
 }

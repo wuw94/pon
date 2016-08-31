@@ -7,6 +7,9 @@ public class BulletTrail : NetworkBehaviour
     public RaycastHit2D ray;
     public float distance;
 
+    public float fade_range_min;
+    public float fade_range_max;
+
     private void Start()
     {
         StartCoroutine(FadeAway());
@@ -15,7 +18,7 @@ public class BulletTrail : NetworkBehaviour
 
     private IEnumerator FadeAway()
     {
-        float fade_away = Random.Range(0.04f, 0.08f);
+        float fade_away = Random.Range(fade_range_min, fade_range_max);
         while (true)
         {
             GetComponent<SpriteRenderer>().color = new Color(GetComponent<SpriteRenderer>().color.r,

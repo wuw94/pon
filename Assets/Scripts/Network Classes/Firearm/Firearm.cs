@@ -1,10 +1,19 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
-using System.Linq;
 using System.Collections;
 
 public abstract class Firearm : NetworkBehaviour
 {
+    public BucketInt ammunition;
+
+    public float reload_time;
+
+    [HideInInspector]
+    public bool is_reloading = false;
+
+    [HideInInspector]
+    public float reload_percent = 0;
+    
     [SerializeField]
     protected float max_distance;
 
@@ -12,130 +21,53 @@ public abstract class Firearm : NetworkBehaviour
     protected float damage;
 
     [SerializeField]
-    protected bool fall_off_damage;
+    protected FalloffType fall_off_type;
     
     [SerializeField]
     protected GameObject projectile;
 
+    public Character owner;
+
+    private void Start()
+    {
+        ammunition.current = ammunition.max;
+    }
+    
+    /// <summary>
+    /// Start the reload sequence.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerator Reload()
+    {
+        if (!is_reloading && ammunition.current < ammunition.max)
+        {
+            is_reloading = true;
+            reload_percent = 0;
+            ReloadStart();
+            for (int i = 0; i < 100; i++)
+            {
+                reload_percent++;
+                yield return new WaitForSeconds(reload_time / 100.0f);
+            }
+            is_reloading = false;
+            ReloadEnd();
+            ammunition.Refill();
+        }
+    }
+
+    protected virtual void ReloadStart() { }
+    protected virtual void ReloadEnd() { }
+
+    /// <summary>
+    /// Returns true if you're not reloading and have ammunition.
+    /// </summary>
+    /// <returns></returns>
+    protected bool CheckAmmo()
+    {
+        if (is_reloading || ammunition.IsEmpty())
+            return false;
+        return true;
+    }
 
     public abstract void Fire(float angle);
-
-    protected void FireToward(float angle)
-    {
-        Quaternion direction = Quaternion.Euler(0, 0, angle);
-
-        BulletRay bullet_ray = new BulletRay(GetComponent<Character>().GetTeam(), transform.position, angle, max_distance);
-
-        GameObject g = (GameObject)Instantiate(projectile.GetComponent<Bullet>().trail_prefab, transform.position, direction);
-        g.GetComponent<SpriteRenderer>().color = this.GetComponent<SpriteRenderer>().color;
-
-        if (bullet_ray.hit == HitType.Nothing)
-        {
-            g.transform.localScale = new Vector3(g.transform.localScale.x, max_distance, g.transform.localScale.z);
-            CmdFireAngle(angle, false); // we just show that a shot was fired
-        }
-
-        else if (bullet_ray.hit == HitType.Entity)
-        {
-            g.transform.localScale = new Vector3(g.transform.localScale.x, bullet_ray.ray.distance, g.transform.localScale.z);
-            Instantiate(projectile.GetComponent<Bullet>().hit_prefab, bullet_ray.ray.point, direction);
-            CmdFireAt(bullet_ray.ray.transform.GetComponent<NetworkIdentity>().netId);
-        }
-
-        else if (bullet_ray.hit == HitType.Wall)
-        {
-            g.transform.localScale = new Vector3(g.transform.localScale.x, bullet_ray.ray.distance, g.transform.localScale.z);
-            Instantiate(projectile.GetComponent<Bullet>().hit_prefab, bullet_ray.ray.point, direction);
-            CmdFireAngle(angle, true); // we just show that a shot was fired
-        }
-    }
-
-    protected void FireToward(float[] angles)
-    {
-        foreach (float angle in angles)
-        {
-            Quaternion direction = Quaternion.Euler(0, 0, angle);
-
-            BulletRay bullet_ray = new BulletRay(GetComponent<Character>().GetTeam(), transform.position, angle, max_distance);
-
-
-            // Make Trail
-            GameObject g = (GameObject)Instantiate(projectile.GetComponent<Bullet>().trail_prefab, transform.position, direction);
-            g.GetComponent<SpriteRenderer>().color = this.GetComponent<SpriteRenderer>().color;
-
-
-            if (bullet_ray.hit == HitType.Nothing) // if we hit nothing
-            {
-                g.transform.localScale = new Vector3(g.transform.localScale.x, max_distance, g.transform.localScale.z);
-            }
-            else if (bullet_ray.hit == HitType.Entity) // if we hit an entity
-            {
-                g.transform.localScale = new Vector3(g.transform.localScale.x, bullet_ray.ray.distance, g.transform.localScale.z);
-                Instantiate(projectile.GetComponent<Bullet>().hit_prefab, bullet_ray.ray.point, direction);
-                CmdDamage(bullet_ray.ray.transform.GetComponent<NetworkIdentity>().netId);
-            }
-            else if (bullet_ray.hit == HitType.Wall) //  if we hit a wall
-            {
-                g.transform.localScale = new Vector3(g.transform.localScale.x, bullet_ray.ray.distance, g.transform.localScale.z);
-                Instantiate(projectile.GetComponent<Bullet>().hit_prefab, bullet_ray.ray.point, direction);
-            }
-        }
-        CmdFireListAngles(angles);
-    }
-
-
-    [Command]
-    private void CmdFireAngle(float angle, bool did_hit)
-    {
-        GameObject g = (GameObject)Instantiate(projectile);
-        Bullet b = g.GetComponent<Bullet>();
-        b.Initialize(transform.position, angle, max_distance, did_hit);
-
-        g.GetComponent<NetworkTeam>().PreSpawnChangeTeam(GetComponent<Character>().GetTeam());
-        NetworkServer.SpawnWithClientAuthority(g, GetComponent<Character>().player.gameObject);
-        g.GetComponent<Bullet>().RpcMakeTrail(GetComponent<Character>().GetTeam());
-    }
-
-
-    [Command]
-    private void CmdFireListAngles(float[] angles)
-    {
-        GameObject g = (GameObject)Instantiate(projectile);
-        Bullet b = g.GetComponent<Bullet>();
-        b.Initialize(transform.position, angles, max_distance);
-
-        g.GetComponent<NetworkTeam>().PreSpawnChangeTeam(GetComponent<Character>().GetTeam());
-        NetworkServer.SpawnWithClientAuthority(g, GetComponent<Character>().player.gameObject);
-        g.GetComponent<Bullet>().RpcMakeTrail(GetComponent<Character>().GetTeam());
-    }
-
-
-
-    [Command]
-    private void CmdFireAt(NetworkInstanceId hit)
-    {
-        NetworkEntity ne = ClientScene.FindLocalObject(hit).GetComponent<NetworkEntity>();
-
-        float AngleRad = Mathf.Atan2(ne.transform.position.y - this.transform.position.y, ne.transform.position.x - this.transform.position.x);
-        float AngleDeg = (180 / Mathf.PI) * AngleRad;
-        float angle = AngleDeg - 90;
-        Quaternion direction = Quaternion.Euler(0, 0, angle);
-
-        GameObject g = (GameObject)Instantiate(projectile, transform.position, direction);
-        Bullet b = g.GetComponent<Bullet>();
-        b.Initialize(transform.position, angle, max_distance, true);
-
-        g.GetComponent<NetworkTeam>().PreSpawnChangeTeam(GetComponent<Character>().GetTeam());
-
-        NetworkServer.SpawnWithClientAuthority(g, GetComponent<Character>().player.gameObject);
-        g.GetComponent<Bullet>().RpcMakeTrail(GetComponent<Character>().GetTeam());
-    }
-
-    [Command]
-    private void CmdDamage(NetworkInstanceId hit)
-    {
-        NetworkEntity ne = ClientScene.FindLocalObject(hit).GetComponent<NetworkEntity>();
-        float distance = Vector2.Distance(this.transform.position, ne.transform.position);
-        ne.ChangeHealth(-damage * (1 - distance / max_distance));
-    }
 }

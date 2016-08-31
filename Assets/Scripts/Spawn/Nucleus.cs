@@ -26,15 +26,14 @@ public class Nucleus : NetworkTeam
             return;
         if (Player.mine.character.GetTeam() == this.GetTeam())
         {
-            GUI.Label(new Rect(20, Screen.height - 80, 300, 100), "Your Team: [" + this.GetTeam() + "]");
             string ally_text = "Your Nucleus: " + (int)(current_health / max_health * 100) + "%";
-            GUI.Label(new Rect(20, Screen.height - 60, 300, 100), ally_text);
+            GUI.Label(new Rect(Screen.width - 200, Screen.height - 40, 300, 100), ally_text);
 
         }
         else
         {
             string enemy_text = "Enemy Nucleus: " + (int)(current_health / max_health * 100) + "%";
-            GUI.Label(new Rect(20, Screen.height - 40, 300, 100), enemy_text);
+            GUI.Label(new Rect(Screen.width - 200, Screen.height - 40, 300, 100), enemy_text);
         }
     }
 

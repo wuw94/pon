@@ -23,8 +23,29 @@ public abstract class NetworkEntity : NetworkTeam
     [SyncVar]
     private float _current_health = 100;
 
+    private float _current_health_lerp = 0;
+
     [SyncVar(hook = "OnDead")]
     private bool _is_dead = false;
+
+    public override void Update()
+    {
+        base.Update();
+        LerpHealth();
+    }
+
+    private void LerpHealth()
+    {
+        _current_health_lerp = Mathf.Lerp(_current_health_lerp, _current_health, Time.deltaTime * 10);
+        if (_current_health == 0 && _current_health_lerp < 1)
+            _current_health_lerp = 0;
+    }
+
+
+    public float GetHealthLerp()
+    {
+        return _current_health_lerp;
+    }
 
     public float GetHealth()
     {

@@ -31,22 +31,26 @@ public class BulletRay
 
         hit = HitType.Nothing;
 
-        // Raycast to entities first.
-        RaycastHit2D[] rays = Physics2D.RaycastAll(this.start_point, (Vector2)(direction * Vector2.up), this.max_distance, 1 << 12).OrderBy(h => h.distance).ToArray();
+        // Raycast to entities or walls.
+        RaycastHit2D[] rays = Physics2D.RaycastAll(this.start_point, (Vector2)(direction * Vector2.up), this.max_distance, 1 << 5 | 1 << 8 | 1 << 12).OrderBy(h => h.distance).ToArray();
 
         foreach (RaycastHit2D ray_entity in rays)
         {
-            if (ray_entity.transform.GetComponent<NetworkEntity>().GetTeam() != team)
+            if (ray_entity.transform.gameObject.layer == 8)
             {
                 ray = ray_entity;
-                hit = HitType.Entity;
+                hit = HitType.Wall;
                 return;
             }
+            else if ((ray_entity.transform.gameObject.layer == 5 || ray_entity.transform.gameObject.layer == 12) )
+            {
+                if (ray_entity.transform.GetComponent<NetworkEntity>() != null && ray_entity.transform.GetComponent<NetworkEntity>().GetTeam() != team)
+                {
+                    ray = ray_entity;
+                    hit = HitType.Entity;
+                    return;
+                }
+            }
         }
-
-        // If we arrived here, we failed to hit an entity. Now we raycast to walls.
-        ray = Physics2D.Raycast(this.start_point, (Vector2)(direction * Vector2.up), this.max_distance, 1 << 8);
-        if (ray)
-            hit = HitType.Wall;
     }
 }

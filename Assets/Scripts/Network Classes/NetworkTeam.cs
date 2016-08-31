@@ -45,9 +45,9 @@ public abstract class NetworkTeam : NetworkBehaviour
     [SyncVar(hook = "OnUpdateTeam")]
     private Team _team = Team.Neutral; // What team this entity belongs to
 
-    protected readonly Color white = new Color(1, 1, 1, 1);
-    protected readonly Color blue = new Color(0.204f, 0.204f, 1, 1);
-    protected readonly Color red = new Color(1, 0.204f, 0.204f, 1);
+    public readonly Color white = new Color(1, 1, 1, 1);
+    public readonly Color blue = new Color(0.304f, 0.304f, 1, 1);
+    public readonly Color red = new Color(1, 0.304f, 0.304f, 1);
 
 
     public virtual void Start()
@@ -177,7 +177,8 @@ public abstract class NetworkTeam : NetworkBehaviour
     /// </summary>
     protected virtual void OnDisplayMine()
     {
-        GetComponent<SpriteRenderer>().color = white;
+        if (GetComponent<SpriteRenderer>() != null)
+            GetComponent<SpriteRenderer>().color = white;
     }
 
     /// <summary>
@@ -185,7 +186,8 @@ public abstract class NetworkTeam : NetworkBehaviour
     /// </summary>
     protected virtual void OnDisplayNeutral()
     {
-        GetComponent<SpriteRenderer>().color = Color.gray;
+        if (GetComponent<SpriteRenderer>() != null)
+            GetComponent<SpriteRenderer>().color = Color.gray;
     }
 
     /// <summary>
@@ -193,7 +195,8 @@ public abstract class NetworkTeam : NetworkBehaviour
     /// </summary>
     protected virtual void OnDisplayAlly()
     {
-        GetComponent<SpriteRenderer>().color = blue;
+        if (GetComponent<SpriteRenderer>() != null)
+            GetComponent<SpriteRenderer>().color = blue;
     }
 
     /// <summary>
@@ -201,7 +204,8 @@ public abstract class NetworkTeam : NetworkBehaviour
     /// </summary>
     protected virtual void OnDisplayEnemy()
     {
-        GetComponent<SpriteRenderer>().color = red;
+        if (GetComponent<SpriteRenderer>() != null)
+            GetComponent<SpriteRenderer>().color = red;
     }
 
 }

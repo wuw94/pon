@@ -12,9 +12,6 @@ public class Bullet : NetworkTeam
     [SyncVar]
     private float _max_distance; // How far the bullet can travel
     
-    [SyncVar]
-    private bool _did_hit = false;
-
     // Prefab for creating a bullet trail
     public GameObject trail_prefab;
 
@@ -33,7 +30,6 @@ public class Bullet : NetworkTeam
         this._start_point = start_point;
         this._angles.Add(angle);
         this._max_distance = max_distance;
-        this._did_hit = did_hit;
     }
     
     [ClientRpc]

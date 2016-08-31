@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.Networking;
-using System.Collections;
-
-public class Damager : CharacterInteractor
+﻿public class Damager : CharacterInteractor
 {
     public float damage = 0;
 
@@ -11,12 +7,12 @@ public class Damager : CharacterInteractor
         base.DoToEnemy(c);
     }
 
-    public void DamagePlayer(Character c)
+    public void DamageCharacter(Character c)
     {
         c.ChangeHealth(-damage);
     }
 
-    public void DamagePlayer(Character c, float percentage)
+    public void DamageCharacter(Character c, float percentage)
     {
         c.ChangeHealth(-damage * percentage);
     }

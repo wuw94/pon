@@ -26,12 +26,13 @@ public class CharacterInteractor : NetworkTeam
     /// <summary>
     /// Allies inside the PlayerInteractor's collider trigger
     /// </summary>
-    private List<Character> allies_held = new List<Character>();
+    protected List<Character> allies_held = new List<Character>();
 
     /// <summary>
     /// Enemies inside the PlayerInteractor's collider trigger
     /// </summary>
-    private List<Character> enemies_held = new List<Character>();
+    
+    public List<Character> enemies_held = new List<Character>();
 
     public override void Update()
     {
@@ -72,10 +73,14 @@ public class CharacterInteractor : NetworkTeam
             
             Character c = col.GetComponent<Character>();
             if (c.GetTeam() == this.GetTeam())
-                allies_held.Add(c);
+            {
+                if (!allies_held.Contains(c))
+                    allies_held.Add(c);
+            }
             else
             {
-                enemies_held.Add(c);
+                if (!enemies_held.Contains(c))
+                    enemies_held.Add(c);
             }
         }
     }

@@ -767,7 +767,7 @@ public class DynamicLight : MonoBehaviour {
 		}
 		renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 		renderer.receiveShadows = false;
-		renderer.useLightProbes = false;
+		//renderer.useLightProbes = false;
 		//renderer.sortingLayerName = "Default";
 
 		//--mesh filter--//
@@ -1500,6 +1500,7 @@ public class DynamicLight : MonoBehaviour {
 	/// </summary>
 	internal void DeleteVertsInConflict(){
 		//List<int> toKill = new List<int>(); // hold all verts id that will remove
+
 		float _rangeAngleComparative = 0.0005f;
 		Vert one, two;
 		

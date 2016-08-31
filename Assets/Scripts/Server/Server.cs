@@ -14,8 +14,9 @@ using System.Collections.Generic;
 /// </summary>
 public class Server : NetworkManager
 {
-
-    private string try_ip;
+    [HideInInspector]
+    public string player_name = "Boring Name";
+    //private string try_ip;
 
     /// <summary>
     /// Our list of connections (in int based on a connection's connectionId).
@@ -53,12 +54,17 @@ public class Server : NetworkManager
 
     private void Start()
     {
-        try_ip = Network.player.ipAddress;
+        //try_ip = Network.player.ipAddress;
     }
 
     
     private void OnGUI()
     {
+        if (SceneManager.GetActiveScene().name == offlineScene)
+        {
+            GUI.Label(new Rect(Screen.width / 2, Screen.height / 2 - 20, 150, 20), "Your Name");
+            player_name = GUI.TextField(new Rect(Screen.width / 2, Screen.height / 2, 150, 20), player_name, 15);
+        }
         /*
         if (SceneManager.GetActiveScene().name == offlineScene)
         {
