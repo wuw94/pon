@@ -10,14 +10,13 @@ public class Rockjaw : Character
     public override float max_speed { get { return 3.5f; } set { throw new NotImplementedException(); } }
 
     // Primary Weapon
-    private const float _primary_cooldown = 0.9f;
-
     [SerializeField]
     private Shotgun primary;
+    private const float _primary_cooldown = 0.9f;
 
-    // Skill 1 (Unload)
-    private const float _skill1_cooldown = 0.1f;
-    private bool _skill1_using = false;
+    // Skill 1 (Crunch)
+    public RockjawCrunch rockjaw_crunch;
+    private const float _skill1_cooldown = 2.0f;
 
     // Skill 2 (Dash)
     private const float _skill2_cooldown = 6.0f;
@@ -28,7 +27,7 @@ public class Rockjaw : Character
         ability_primary.SetCooldown(_primary_cooldown);
         ability_reload.SetCooldown(0);
         ability_skill1.SetCooldown(_skill1_cooldown);
-        ability_skill1.name = "Unload";
+        ability_skill1.name = "Crunch";
         ability_skill2.SetCooldown(_skill2_cooldown);
         ability_skill2.name = "Dash";
     }
@@ -42,7 +41,10 @@ public class Rockjaw : Character
     public override void PrimaryAttack()
     {
         if (!primary.is_reloading)
+        {
+            ShakeCamera(0.05f, 0.09f, Quaternion.Euler(0, 0, GetMouseDirection(attacking_offset.position)));
             primary.Fire(GetMouseDirection(attacking_offset.position));
+        }
         else
             ability_primary.Reset();
     }
@@ -52,43 +54,40 @@ public class Rockjaw : Character
         StartCoroutine(primary.Reload());
     }
 
-    // ------------------------------------------------- Unload -------------------------------------------------
+    // ------------------------------------------------- Crunch -------------------------------------------------
     public override void Skill1()
     {
-        if (stun_status.IsActive())
-        {
-            ability_skill1.Reset();
-            return;
-        }
-        if (!_skill1_using)
-            StartCoroutine(Unload());
+        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+        rockjaw_crunch.ShowLocal(this.transform.position + transform.rotation * (Vector2.up * 0.5f), this.transform.rotation);
+        CmdMakeRockjawCrunch();
+        StartCoroutine(RockjawCrunch());
     }
 
-    private IEnumerator Unload()
+    [Command]
+    private void CmdMakeRockjawCrunch()
     {
-        float spread = primary.spread;
-        primary.spread *= 2; // double the spread
-        _skill1_using = true;
-        int num_shots = primary.ammunition.current;
-        for (int i = 0; i < num_shots; i++)
-        {
-            PrimaryAttack();
-            yield return new WaitForSeconds(0.1f);
-        }
-        primary.spread = spread; // return to original spread
-        _skill1_using = false;
+        RockjawCrunch rc = Instantiate<RockjawCrunch>(rockjaw_crunch);
+        NetworkServer.SpawnWithClientAuthority(rc.gameObject, this.player.connectionToClient);
+        rc.Make(this.transform.position + transform.rotation * (Vector2.up * 0.5f), this.transform.rotation, this.GetTeam(), this.player.connectionToClient);
     }
+
+    private IEnumerator RockjawCrunch()
+    {
+        CmdInflictStun(0.1f);
+        yield return new WaitForSeconds(0.1f);
+    }
+
 
     // ------------------------------------------------- Dash -------------------------------------------------
     public override void Skill2()
     {
-        if (root_status.IsActive())
+        if (SA_rooted)
         {
             ability_skill2.Reset();
             return;
         }
 
-        root_status.CmdInflict(0.1f);
+        CmdInflictRoot(0.1f);
 
         Vector3 dir = Vector2.zero;
         if (Input.GetKey(KeyCode.W))

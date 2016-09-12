@@ -178,7 +178,7 @@ public abstract class NetworkTeam : NetworkBehaviour
     protected virtual void OnDisplayMine()
     {
         if (GetComponent<SpriteRenderer>() != null)
-            GetComponent<SpriteRenderer>().color = white;
+            GetComponent<SpriteRenderer>().color = new Color(white.r, white.g, white.b, GetComponent<SpriteRenderer>().color.a);
     }
 
     /// <summary>
@@ -187,7 +187,7 @@ public abstract class NetworkTeam : NetworkBehaviour
     protected virtual void OnDisplayNeutral()
     {
         if (GetComponent<SpriteRenderer>() != null)
-            GetComponent<SpriteRenderer>().color = Color.gray;
+            GetComponent<SpriteRenderer>().color = new Color(Color.gray.r, Color.gray.g, Color.gray.b, GetComponent<SpriteRenderer>().color.a);
     }
 
     /// <summary>
@@ -196,7 +196,7 @@ public abstract class NetworkTeam : NetworkBehaviour
     protected virtual void OnDisplayAlly()
     {
         if (GetComponent<SpriteRenderer>() != null)
-            GetComponent<SpriteRenderer>().color = blue;
+            GetComponent<SpriteRenderer>().color = new Color(blue.r, blue.g, blue.b, GetComponent<SpriteRenderer>().color.a);
     }
 
     /// <summary>
@@ -205,7 +205,7 @@ public abstract class NetworkTeam : NetworkBehaviour
     protected virtual void OnDisplayEnemy()
     {
         if (GetComponent<SpriteRenderer>() != null)
-            GetComponent<SpriteRenderer>().color = red;
+            GetComponent<SpriteRenderer>().color = new Color(red.r, red.g, red.b, GetComponent<SpriteRenderer>().color.a);
     }
 
 }

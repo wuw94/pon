@@ -25,7 +25,7 @@ public abstract class HitscanFirearm : Firearm
             {
                 g.transform.localScale = new Vector3(g.transform.localScale.x, bullet_ray.ray.distance, g.transform.localScale.z);
                 Instantiate(projectile.GetComponent<Bullet>().hit_prefab, bullet_ray.ray.point, direction);
-                CmdDamage(bullet_ray.ray.transform.GetComponent<NetworkIdentity>().netId);
+                CmdDamage(bullet_ray.ray.collider.transform.GetComponent<NetworkIdentity>().netId);
             }
             else if (bullet_ray.hit == HitType.Wall) //  if we hit a wall
             {

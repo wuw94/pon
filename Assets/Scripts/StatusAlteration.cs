@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 [System.Serializable]
 public struct StatusAlteration
 {
-    private float _time_stamp;
+    public float _time_stamp;
 
     public StatusAlteration(float current_time)
     {
@@ -22,12 +22,12 @@ public struct StatusAlteration
 
     /// <summary>
     /// Inflicts this status alteration for a given amount of time.
-    /// If the current status alteration should continue for longer than the inflicted,
+    /// If the current status alteration should continue for longer than the to-be-inflicted,
     /// the effect isn't extended.
     /// </summary>
     /// <param name="duration"></param>
-    [Command]
-    public void CmdInflict(float duration)
+    
+    public void Inflict(float duration)
     {
         if (_time_stamp < Time.time + duration)
             _time_stamp = Time.time + duration;

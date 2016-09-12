@@ -25,8 +25,19 @@ public abstract class NetworkEntity : NetworkTeam
 
     private float _current_health_lerp = 0;
 
+    /// <summary>
+    /// should only be accessed from the server.
+    /// </summary>
+    protected float time_of_recent_damage;
+
     [SyncVar(hook = "OnDead")]
     private bool _is_dead = false;
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        time_of_recent_damage = Time.time;
+    }
 
     public override void Update()
     {
@@ -65,12 +76,13 @@ public abstract class NetworkEntity : NetworkTeam
         if (_current_health <= 0 || _is_dead)
             return;
 
-        _current_health += amount;
+        if (amount < 0)
+            time_of_recent_damage = Time.time;
+
+        _current_health += amount; // the change
 
         if (_current_health > max_health)
-        {
             _current_health = max_health;
-        }
 
         if (_current_health <= 0)
         {
@@ -85,9 +97,21 @@ public abstract class NetworkEntity : NetworkTeam
         _is_dead = d;
         Color c = GetComponent<SpriteRenderer>().color;
         if (_is_dead)
+        {
             GetComponent<SpriteRenderer>().color = new Color(c.r, c.g, c.b, 0.2f);
+            foreach (SpriteRenderer sr in GetComponentsInChildren<SpriteRenderer>())
+                sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, 0);
+            foreach (Collider2D c2d in GetComponents<Collider2D>())
+                c2d.enabled = false;
+        }
         else
+        {
             GetComponent<SpriteRenderer>().color = new Color(c.r, c.g, c.b, 1);
+            foreach (SpriteRenderer sr in GetComponentsInChildren<SpriteRenderer>())
+                sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, 1);
+            foreach (Collider2D c2d in GetComponents<Collider2D>())
+                c2d.enabled = true;
+        }
     }
 
     public void Revive()

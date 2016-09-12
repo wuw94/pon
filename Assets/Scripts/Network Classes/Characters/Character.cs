@@ -27,6 +27,8 @@ public abstract class Character : NetworkEntity
 
     private DynamicLight look_for_characters;
 
+    public TrailRenderer trail;
+
     public Transform attacking_offset;
 
     public abstract float max_speed { get; set; }
@@ -43,36 +45,40 @@ public abstract class Character : NetworkEntity
     /// </summary>
     protected Ability ability_skill2;
 
-    
 
-    // Status Ailments
-    [SyncVar]
-    public StatusAlteration stun_status;
-    [SyncVar]
-    public StatusAlteration root_status;
-
-    [SyncVar]
-    public StatusAlteration lock_passive;
-
-    [SyncVar]
-    public StatusAlteration lock_primary;
+    // Status Ailments to be accessed only from the server.
+    private StatusAlteration _stun_status;
+    private StatusAlteration _root_status;
+    private StatusAlteration _lock_passive;
+    private StatusAlteration _lock_primary;
+    private StatusAlteration _lock_reload;
+    private StatusAlteration _lock_skill1;
+    private StatusAlteration _lock_skill2;
 
     [SyncVar]
-    public StatusAlteration lock_reload;
-
+    protected bool SA_stunned = false;
     [SyncVar]
-    public StatusAlteration lock_skill1;
-
+    protected bool SA_rooted = false;
     [SyncVar]
-    public StatusAlteration lock_skill2;
+    protected bool SA_lock_passive = false;
+    [SyncVar]
+    protected bool SA_lock_primary = false;
+    [SyncVar]
+    protected bool SA_lock_reload = false;
+    [SyncVar]
+    protected bool SA_lock_skill1 = false;
+    [SyncVar]
+    protected bool SA_lock_skill2 = false;
 
 
-    public GUIStyle display_style_mine;
-    public GUIStyle display_style_ally;
-    public GUIStyle display_style_enemy;
-    public GUIStyle display_style_mine_health;
-    public GUIStyle display_style_ally_health;
-    public GUIStyle display_style_enemy_health;
+    // Name Display
+    private GUIStyle display_style_mine;
+    private GUIStyle display_style_ally;
+    private GUIStyle display_style_enemy;
+    private GUIStyle display_style_mine_health;
+    private GUIStyle display_style_ally_health;
+    private GUIStyle display_style_enemy_health;
+
 
     // ------------------------------------------------- Unity Overrides -------------------------------------------------
 
@@ -90,23 +96,29 @@ public abstract class Character : NetworkEntity
         StartCoroutine(LookForDL());
     }
 
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        _stun_status = new StatusAlteration(Time.time);
+        _root_status = new StatusAlteration(Time.time);
+        _lock_passive = new StatusAlteration(Time.time);
+        _lock_primary = new StatusAlteration(Time.time);
+        _lock_reload = new StatusAlteration(Time.time);
+        _lock_skill1 = new StatusAlteration(Time.time);
+        _lock_skill2 = new StatusAlteration(Time.time);
+        Revive();
+    }
 
 
     public override void OnStartClient()
     {
         base.OnStartClient();
-        stun_status = new StatusAlteration(Time.time);
-        root_status = new StatusAlteration(Time.time);
-        lock_passive = new StatusAlteration(Time.time);
-        lock_primary = new StatusAlteration(Time.time);
-        lock_reload = new StatusAlteration(Time.time);
-        lock_skill1 = new StatusAlteration(Time.time);
-        lock_skill2 = new StatusAlteration(Time.time);
         ability_primary = new Ability(true, false);
         ability_reload = new Ability(KeyCode.R, true);
         ability_skill1 = new Ability(KeyCode.LeftShift, false);
         ability_skill2 = new Ability(KeyCode.Space, false);
-        Revive();
+        trail.sortingLayerName = "Player";
+        trail.sortingOrder = -1;
     }
 
     public override void OnStartAuthority()
@@ -124,7 +136,10 @@ public abstract class Character : NetworkEntity
     {
         base.Update();
         if (isServer)
+        {
+            ManageStatusAilments();
             Passive();
+        }
         if (hasAuthority)
         {
             OverviewCameraSwitch();
@@ -135,8 +150,61 @@ public abstract class Character : NetworkEntity
             CheckSkillInputs();
         }
     }
-    
-    
+
+    private void ManageStatusAilments()
+    {
+        SA_stunned = _stun_status.IsActive();
+        SA_rooted = _root_status.IsActive();
+        SA_lock_passive = _lock_passive.IsActive();
+        SA_lock_primary = _lock_primary.IsActive();
+        SA_lock_reload = _lock_reload.IsActive();
+        SA_lock_skill1 = _lock_skill1.IsActive();
+        SA_lock_skill2 = _lock_skill2.IsActive();
+    }
+
+    // -- Status Ailments Inflict
+    [Command]
+    public void CmdInflictStun(float time)
+    {
+        _stun_status.Inflict(time);
+    }
+
+    [Command]
+    public void CmdInflictRoot(float time)
+    {
+        _root_status.Inflict(time);
+    }
+
+    [Command]
+    public void CmdInflictLockPassive(float time)
+    {
+        _lock_passive.Inflict(time);
+    }
+
+    [Command]
+    public void CmdInflictLockPrimary(float time)
+    {
+        _lock_primary.Inflict(time);
+    }
+
+    [Command]
+    public void CmdInflictLockReload(float time)
+    {
+        _lock_reload.Inflict(time);
+    }
+
+    [Command]
+    public void CmdInflictLockSkill1(float time)
+    {
+        _lock_skill1.Inflict(time);
+    }
+
+    [Command]
+    public void CmdInflictLockSkill2(float time)
+    {
+        _lock_skill2.Inflict(time);
+    }
+
 
     // ------------------------------------------------- Setup -------------------------------------------------
 
@@ -212,7 +280,7 @@ public abstract class Character : NetworkEntity
 
     private void CheckMovementInputs()
     {
-        if (stun_status.IsActive() || root_status.IsActive())
+        if (SA_stunned || SA_rooted)
             return;
         if (Input.GetKey(KeyCode.W))
             Move(Vector2.up);
@@ -226,23 +294,23 @@ public abstract class Character : NetworkEntity
 
     private void CheckSkillInputs()
     {
-        if (stun_status.IsActive())
+        if (SA_stunned)
             return;
-        if (!lock_primary.IsActive() && ability_primary.Pressed() && ability_primary.Ready())
+        if (!SA_lock_primary && ability_primary.Pressed() && ability_primary.Ready())
         {
             ability_primary.Use();
             PrimaryAttack();
         }
-        if (!lock_reload.IsActive() && ability_reload.Pressed())
+        if (!SA_lock_reload && ability_reload.Pressed())
         {
             Reload();
         }
-        if (!lock_skill1.IsActive() && ability_skill1.Pressed() && ability_skill1.Ready())
+        if (!SA_lock_skill1 && ability_skill1.Pressed() && ability_skill1.Ready())
         {
             ability_skill1.Use();
             Skill1();
         }
-        if (!lock_skill2.IsActive() && ability_skill2.Pressed() && ability_skill2.Ready())
+        if (!SA_lock_skill2 && ability_skill2.Pressed() && ability_skill2.Ready())
         {
             ability_skill2.Use();
             Skill2();
@@ -267,6 +335,12 @@ public abstract class Character : NetworkEntity
 
     // ------------------------------------------------- Helper Functions -------------------------------------------------
 
+    protected void ShakeCamera(float intensity, float duration, Quaternion dir)
+    {
+        Camera.main.GetComponent<LerpFollow>().Shake(intensity, duration, dir);
+    }
+
+
     protected float GetMouseDirection(Vector2 from_position)
     {
         if (Camera.main == null)
@@ -279,23 +353,67 @@ public abstract class Character : NetworkEntity
 
     protected void FaceMouse()
     {
-        if (stun_status.IsActive() || root_status.IsActive())
+        if (SA_stunned || SA_rooted)
             return;
         Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         if (Vector2.Distance(mouse, transform.position) < Vector2.Distance(attacking_offset.position, transform.position))
             transform.rotation = Quaternion.Euler(0, 0, GetMouseDirection(transform.position));
         else
             transform.rotation = Quaternion.Euler(0, 0, GetMouseDirection(attacking_offset.position));
+    }
 
+    protected void Face(Vector2 pos)
+    {
+        float AngleRad = Mathf.Atan2(pos.y - transform.position.y, pos.x - transform.position.x);
+        float AngleDeg = (180 / Mathf.PI) * AngleRad;
+        transform.rotation = Quaternion.Euler(0, 0, AngleDeg - 90);
+    }
+
+    /// <summary>
+    /// Get the closest character to the mouse, besides yourself.
+    /// </summary>
+    /// <returns></returns>
+    protected Character GetClosestCharacterToMouse()
+    {
+        Character to_return = null;
+        Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        foreach (Character c in FindObjectsOfType<Character>())
+            if (c != this && c.is_visible && (to_return == null || Vector2.Distance(mouse, c.transform.position) < Vector2.Distance(mouse, to_return.transform.position)))
+                to_return = c;
+        return to_return;
+    }
+
+    protected Character GetClosestAllyToMouse()
+    {
+        Character to_return = null;
+        Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        foreach (Character c in FindObjectsOfType<Character>())
+            if (c != this && c.GetTeam() == this.GetTeam() && c.is_visible && (to_return == null || Vector2.Distance(mouse, c.transform.position) < Vector2.Distance(mouse, to_return.transform.position)))
+                to_return = c;
+        return to_return;
+    }
+
+    protected Character GetClosestEnemyToMouse()
+    {
+        Character to_return = null;
+        Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        foreach (Character c in FindObjectsOfType<Character>())
+            if (c != this && c.GetTeam() != this.GetTeam() && c.is_visible && (to_return == null || Vector2.Distance(mouse, c.transform.position) < Vector2.Distance(mouse, to_return.transform.position)))
+                to_return = c;
+        return to_return;
     }
 
     public override void Dead()
     {
+        
         StartCoroutine(RespawnProcess());
     }
 
     IEnumerator RespawnProcess()
     {
+        GameObject d = (GameObject)Instantiate(Resources.Load<GameObject>("Characters/Dead"), transform.position, Quaternion.Euler(0, 0, 0));
+        NetworkServer.Spawn(d);
+        Destroy(d, 5);
         yield return new WaitForSeconds(5);
         RpcPortToSpawn(GetTeam());
         Reload();
@@ -414,6 +532,14 @@ public abstract class Character : NetworkEntity
         if (t == Team.B)
             transform.position = base_module.SpawnB + new Vector2(MapGenerator.DRAW_PAD + 0.5f, MapGenerator.DRAW_PAD + 0.5f);
     }
+
+    [ClientRpc]
+    public void RpcPortToPosition(Vector2 position)
+    {
+        if (!hasAuthority)
+            return;
+        transform.position = new Vector3(position.x, position.y, this.transform.position.z);
+    }
     
     private void OnUpdatePlayerId(NetworkInstanceId id)
     {
@@ -436,7 +562,7 @@ public abstract class Character : NetworkEntity
 
 
 
-    private void OnDestroy()
+    public virtual void OnDestroy()
     {
         StopAllCoroutines();
         look_for_characters.InsideFieldOfViewEvent -= LookForThis;

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
-using System.Collections;
 
 /// <summary>
 /// A class to hold client-calculated objects.
@@ -20,10 +19,10 @@ public class ClientCalculated : NetworkBehaviour
     /// <param name="rotation"></param>
     public void ShowLocal(Vector3 position, Quaternion rotation)
     {
-        ClientCalculatedView v = Instantiate<ClientCalculatedView>(view);
-        v.transform.position = position;
-        v.transform.rotation = rotation;
-        v.timeout = this.timeout;
+        view.transform.position = position;
+        view.transform.rotation = rotation;
+        view.timeout = this.timeout;
+        Instantiate<ClientCalculatedView>(view);
     }
 
     /// <summary>
@@ -42,11 +41,11 @@ public class ClientCalculated : NetworkBehaviour
     [Command]
     private void CmdMake(Vector3 position, Quaternion rotation, Team team)
     {
+        logic.timeout = this.timeout;
+        logic.transform.position = position;
+        logic.transform.rotation = rotation;
         ClientCalculatedLogic l = Instantiate<ClientCalculatedLogic>(logic);
         l.PreSpawnChangeTeam(team);
-        l.transform.position = position;
-        l.transform.rotation = rotation;
-        l.timeout = this.timeout;
         NetworkServer.SpawnWithClientAuthority(l.gameObject, this.conn);
         l.RpcMakeVisuals();
         Destroy(this.gameObject);

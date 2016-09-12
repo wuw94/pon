@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
-using System.Collections;
-using System;
 
 /* Player.
  * 
@@ -29,6 +27,9 @@ public class Player : NetworkBehaviour
     [SyncVar(hook = "OnUpdateCharId")]
     private NetworkInstanceId character_id;
 
+    [SyncVar]
+    public bool can_choose_character = true;
+
 
     // Stuff to do just to a client player right when it loads
     public override void OnStartLocalPlayer()
@@ -54,8 +55,12 @@ public class Player : NetworkBehaviour
         {
             if (GUI.Button(new Rect(Screen.width / 2 - 50, 80 + 20 * i, 100, 20), possible_characters[i].name))
             {
-                CmdDestroyCharacter(character_id);
-                CmdMakeCharacter(i);
+                if (can_choose_character)
+                {
+                    can_choose_character = false;
+                    CmdDestroyCharacter(character_id);
+                    CmdMakeCharacter(i);
+                }
             }
         }
     }
@@ -69,6 +74,8 @@ public class Player : NetworkBehaviour
         NetworkServer.SpawnWithClientAuthority(g, this.gameObject);
         character_id = g.GetComponent<NetworkBehaviour>().netId;
         g.GetComponent<Character>().player_id = this.netId;
+        can_choose_character = false;
+        can_choose_character = true;
     }
     
     [Command]

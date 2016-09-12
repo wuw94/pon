@@ -10,14 +10,12 @@ public class Weaver : Character
     public override float max_speed { get { return 3.5f; } set { throw new NotImplementedException(); } }
 
     // Primary Weapon
-    private const float _primary_cooldown = 0.6f;
-
     [SerializeField]
     private Firearm primary;
+    private const float _primary_cooldown = 0.3f;
 
     // Skill 1 (Piercing Thread) LShift
     private const float _skill1_cooldown = 12.0f;
-    private bool _skill1_using = false;
 
     public WeaverPiercingThread weaver_piercing_thread;
 
@@ -45,7 +43,10 @@ public class Weaver : Character
     public override void PrimaryAttack()
     {
         if (!primary.is_reloading)
+        {
+            ShakeCamera(0.04f, 0.07f, Quaternion.Euler(0, 0, GetMouseDirection(attacking_offset.position)));
             primary.Fire(GetMouseDirection(attacking_offset.position));
+        }
         else
             ability_primary.Reset();
     }
@@ -74,7 +75,7 @@ public class Weaver : Character
     
     private IEnumerator PiercingThread()
     {
-        stun_status.CmdInflict(0.5f);
+        CmdInflictStun(0.5f);
         yield return new WaitForSeconds(0.5f);
     }
 
@@ -82,12 +83,12 @@ public class Weaver : Character
     // ------------------------------------------------- Tumble -------------------------------------------------
     public override void Skill2()
     {
-        if (root_status.IsActive())
+        if (SA_rooted)
         {
             ability_skill2.Reset();
             return;
         }
-        root_status.CmdInflict(0.1f);
+        CmdInflictRoot(0.1f);
 
         Vector3 dir = Vector2.zero;
         if (Input.GetKey(KeyCode.W))
@@ -109,7 +110,6 @@ public class Weaver : Character
         else
             StartCoroutine(TumbleEcho());
     }
-
 
 
     private IEnumerator Tumble()

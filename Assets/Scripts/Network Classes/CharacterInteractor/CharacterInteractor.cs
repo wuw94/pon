@@ -31,8 +31,7 @@ public class CharacterInteractor : NetworkTeam
     /// <summary>
     /// Enemies inside the PlayerInteractor's collider trigger
     /// </summary>
-    
-    public List<Character> enemies_held = new List<Character>();
+    protected List<Character> enemies_held = new List<Character>();
 
     public override void Update()
     {
@@ -49,6 +48,24 @@ public class CharacterInteractor : NetworkTeam
     /// </summary>
     /// <param name="c"></param>
     public virtual void DoToAlly(Character c)
+    {
+
+    }
+
+    /// <summary>
+    /// Called when an ally enters this CharacterInteractor's collider.
+    /// </summary>
+    /// <param name="c"></param>
+    public virtual void OnAllyEnter(Character c)
+    {
+
+    }
+
+    /// <summary>
+    /// Called when an enemy enters this CharacterInteractor's collider.
+    /// </summary>
+    /// <param name="c"></param>
+    public virtual void OnEnemyEnter(Character c)
     {
 
     }
@@ -75,12 +92,18 @@ public class CharacterInteractor : NetworkTeam
             if (c.GetTeam() == this.GetTeam())
             {
                 if (!allies_held.Contains(c))
+                {
                     allies_held.Add(c);
+                    OnAllyEnter(c);
+                }
             }
             else
             {
                 if (!enemies_held.Contains(c))
+                {
                     enemies_held.Add(c);
+                    OnEnemyEnter(c);
+                }
             }
         }
     }

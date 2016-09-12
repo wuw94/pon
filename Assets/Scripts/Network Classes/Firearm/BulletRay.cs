@@ -9,6 +9,13 @@ public enum HitType
 
 public class BulletRay
 {
+    public const int UI = 5;
+    public const int DYNAMICLIGHT = 8;
+    public const int NETWORKENTITY = 12;
+    public const int CHARACTER = 13;
+    public const int SHIELD = 14;
+    public const int HASHP = 1 << UI | 1 << DYNAMICLIGHT | 1 << NETWORKENTITY | 1 << CHARACTER | 1 << SHIELD;
+
     public Team team;
     public Vector2 start_point;
     public float angle;
@@ -32,17 +39,18 @@ public class BulletRay
         hit = HitType.Nothing;
 
         // Raycast to entities or walls.
-        RaycastHit2D[] rays = Physics2D.RaycastAll(this.start_point, (Vector2)(direction * Vector2.up), this.max_distance, 1 << 5 | 1 << 8 | 1 << 12).OrderBy(h => h.distance).ToArray();
+        RaycastHit2D[] rays = Physics2D.RaycastAll(this.start_point, (Vector2)(direction * Vector2.up), this.max_distance, HASHP).OrderBy(h => h.distance).ToArray();
 
         foreach (RaycastHit2D ray_entity in rays)
         {
-            if (ray_entity.transform.gameObject.layer == 8)
+            int l = ray_entity.transform.gameObject.layer;
+            if (l == DYNAMICLIGHT)
             {
                 ray = ray_entity;
                 hit = HitType.Wall;
                 return;
             }
-            else if ((ray_entity.transform.gameObject.layer == 5 || ray_entity.transform.gameObject.layer == 12) )
+            else if ((l == UI || l == NETWORKENTITY || l == CHARACTER || l == SHIELD) )
             {
                 if (ray_entity.transform.GetComponent<NetworkEntity>() != null && ray_entity.transform.GetComponent<NetworkEntity>().GetTeam() != team)
                 {
