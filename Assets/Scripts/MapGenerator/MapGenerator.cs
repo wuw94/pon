@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using System.Collections;
+using System.Collections.Generic;
 
 public class MapGenerator : NetworkBehaviour
 {
@@ -18,8 +20,96 @@ public class MapGenerator : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
+    }
+
+
+    public IEnumerator BeginGeneration()
+    {
+        if (isServer)
+        {
+            RpcSwitchToLoading();
+            yield return new WaitForSeconds(0.1f);
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+
+            for (int i = 0; i < modules.Length; i++)
+            {
+                GameObject go = Instantiate<GameObject>(modules[i].gameObject);
+                NetworkServer.Spawn(go);
+                modules[i] = go.GetComponent<Module>();
+            }
+            Debug.Log(name + " took " + stopwatch.ElapsedMilliseconds + "ms to complete.");
+            StartCoroutine(WaitForDone());
+            StartCoroutine(WaitForAllPlayersToFinishLoading());
+        }
+    }
+
+    [ClientRpc]
+    private void RpcSwitchToLoading()
+    {
+        Settings.RandomizeLoadingWords();
+        Menu.current = MenuPage.IG_LoadingMap;
+    }
+
+    private IEnumerator WaitForDone()
+    {
+        while (true)
+        {
+            bool test = true;
+            foreach (Module module in modules)
+                if (!module.done)
+                    test = false;
+            if (test)
+                break;
+            yield return null;
+        }
+        Debug.Log("IsDoneDoDraw");
         foreach (Module module in modules)
-            NetworkServer.Spawn(Instantiate(module.gameObject));
+            module.RpcIsDoneDoDraw();
+    }
+
+    private IEnumerator WaitForAllPlayersToFinishLoading()
+    {
+        while (true)
+        {
+            bool test = true;
+            foreach (Player p in FindObjectsOfType<Player>())
+                if (!p.done_generating_map)
+                    test = false;
+            if (test)
+                break;
+            yield return null;
+        }
+        foreach (Player p in FindObjectsOfType<Player>())
+            p.RpcBeginSequence();
+    }
+
+    public void Reset()
+    {
+        if (!isServer)
+        {
+            Debug.LogError("Calling from non-server!");
+        }
+
+        foreach (Player p in FindObjectsOfType<Player>())
+        {
+            if (p.selected_team == Team.A)
+            {
+                p.selected_team = Team.B;
+                p.character.ChangeTeam(Team.B);
+                p.character.RpcPortToSpawn(Team.B);
+                p.character.Revive();
+            }
+            else
+            {
+                p.selected_team = Team.A;
+                p.character.ChangeTeam(Team.A);
+                p.character.RpcPortToSpawn(Team.A);
+                p.character.Revive();
+            }
+        }
+        foreach (Module module in modules)
+            module.Reset();
     }
 
     public GameObject Make(string name)

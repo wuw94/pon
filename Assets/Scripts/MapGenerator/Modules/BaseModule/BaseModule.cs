@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Networking;
 
 public class BaseModule : Module
@@ -28,5 +29,9 @@ public class BaseModule : Module
     {
         MapGenerator.AddToTexture(ref texture, SpawnA, floor);
         MapGenerator.AddToTexture(ref texture, SpawnB, floor);
+    }
+
+    public override void Reset()
+    {
     }
 }

@@ -143,6 +143,8 @@ public abstract class Character : NetworkEntity
         if (hasAuthority)
         {
             OverviewCameraSwitch();
+            if (Menu.current != MenuPage.IG_Gameplay)
+                return;
             if (IsDead())
                 return;
             FaceMouse();
@@ -405,13 +407,13 @@ public abstract class Character : NetworkEntity
 
     public override void Dead()
     {
-        
         StartCoroutine(RespawnProcess());
     }
 
     IEnumerator RespawnProcess()
     {
         GameObject d = (GameObject)Instantiate(Resources.Load<GameObject>("Characters/Dead"), transform.position, Quaternion.Euler(0, 0, 0));
+        d.GetComponent<NetworkTeam>().PreSpawnChangeTeam(this.GetTeam());
         NetworkServer.Spawn(d);
         Destroy(d, 5);
         yield return new WaitForSeconds(5);

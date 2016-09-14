@@ -2,7 +2,7 @@
 using UnityEngine.Networking;
 using System.Collections.Generic;
 using System.Linq;
-
+using System;
 
 public class SyncListPoint : SyncListStruct<Point> { }
 public class SyncListVector2 : SyncListStruct<Vector2> { }
@@ -348,5 +348,12 @@ public class BuildingModule : Module
                                                     go.transform.position.z);
             NetworkServer.Spawn(go);
         }
+    }
+    
+    public override void Reset()
+    {
+        foreach (Nucleus n in FindObjectsOfType<Nucleus>())
+            Destroy(n.gameObject);
+        MakeNucleus();
     }
 }

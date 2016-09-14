@@ -35,7 +35,7 @@ public class Adenward : Character
     private const float _skill1_cooldown = 0.7f;
 
     // Skill 2 (Safeguard) Space
-    private const float _skill2_cooldown = 0.3f;
+    private const float _skill2_cooldown = 1.0f;
 
     public override void OnStartServer()
     {
@@ -152,7 +152,7 @@ public class Adenward : Character
             return;
         }
         Character c = GetClosestAllyToMouse();
-        if (c != null)
+        if (c != null && Vector2.Distance(c.transform.position, this.transform.position) < 6)
         {
             Vector2 dash_to = c.transform.position;
             StartCoroutine(Safeguard(dash_to));
@@ -165,11 +165,13 @@ public class Adenward : Character
 
     private IEnumerator Safeguard(Vector2 dash_to)
     {
-        while (Vector2.Distance(this.transform.position, dash_to) > 1)
+        float count = 0.3f;
+        while (Vector2.Distance(this.transform.position, dash_to) > 1 && count > 0)
         {
             CmdInflictRoot(0.04f);
             Vector2 dir = dash_to - (Vector2)transform.position;
             GetComponent<Rigidbody2D>().velocity = Vector2.ClampMagnitude(dir * 20, 20);
+            count -= 0.02f;
             yield return new WaitForSeconds(0.02f);
         }
 

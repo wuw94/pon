@@ -15,7 +15,7 @@ public abstract class Module : NetworkBehaviour
     private GameObject occluded;
 
     [SyncVar]
-    protected bool done = false;
+    public bool done = false;
 
     /// <summary>
     /// Called immediately upon creation of module, and only on the server.
@@ -28,6 +28,11 @@ public abstract class Module : NetworkBehaviour
     /// Use this for module drawing.
     /// </summary>
     public abstract void Draw();
+
+    /// <summary>
+    /// Called when we want to restart a game with the same map.
+    /// </summary>
+    public abstract void Reset();
 
 
     public override void OnStartServer()
@@ -53,7 +58,7 @@ public abstract class Module : NetworkBehaviour
         if (GetComponent<SpriteRenderer>() != null)
             texture = MapGenerator.GetBlankTexture(map.dimension);
         
-        StartCoroutine(WaitForDone());
+        //StartCoroutine(WaitForDone());
     }
 
     private void MakeOccludedObject()
@@ -75,5 +80,19 @@ public abstract class Module : NetworkBehaviour
         Draw();
         this.GetComponent<SpriteRenderer>().sprite = MapGenerator.ConvertToSprite(texture.natural);
         this.occluded.GetComponent<SpriteRenderer>().sprite = MapGenerator.ConvertToSprite(texture.occluded);
+
+        if (this.GetType() == typeof(BuildingModule))
+            Player.mine.CmdDoneGeneratingMap();
+    }
+
+    [ClientRpc]
+    public void RpcIsDoneDoDraw()
+    {
+        Draw();
+        this.GetComponent<SpriteRenderer>().sprite = MapGenerator.ConvertToSprite(texture.natural);
+        this.occluded.GetComponent<SpriteRenderer>().sprite = MapGenerator.ConvertToSprite(texture.occluded);
+
+        if (this.GetType() == typeof(BuildingModule))
+            Player.mine.CmdDoneGeneratingMap();
     }
 }

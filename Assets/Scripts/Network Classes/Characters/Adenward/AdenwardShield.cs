@@ -31,47 +31,10 @@ public class AdenwardShield : NetworkEntity
 
     private void ManageAlpha()
     {
-        if (owner.IsDead())
+        if (IsDead() || owner.IsDead() || !owner.show_shield)
         {
             GetComponent<Collider2D>().enabled = false;
-            GetComponent<SpriteRenderer>().color = new Color(GetComponent<SpriteRenderer>().color.r,
-                                                                GetComponent<SpriteRenderer>().color.g,
-                                                                GetComponent<SpriteRenderer>().color.b,
-                                                                0);
-            return;
-        }
-        else
-        {
-            GetComponent<Collider2D>().enabled = true;
-        }
 
-        if (IsDead())
-        {
-            GetComponent<SpriteRenderer>().color = new Color(GetComponent<SpriteRenderer>().color.r,
-                                                                GetComponent<SpriteRenderer>().color.g,
-                                                                GetComponent<SpriteRenderer>().color.b,
-                                                                0);
-            transform.GetChild(0).GetComponent<SpriteRenderer>().color = new Color(transform.GetChild(0).GetComponent<SpriteRenderer>().color.r,
-                                                                                    transform.GetChild(0).GetComponent<SpriteRenderer>().color.g,
-                                                                                    transform.GetChild(0).GetComponent<SpriteRenderer>().color.b,
-                                                                                    0);
-            return;
-        }
-        if (owner.show_shield)
-        {
-            GetComponent<BoxCollider2D>().enabled = true;
-            GetComponent<SpriteRenderer>().color = new Color(GetComponent<SpriteRenderer>().color.r,
-                                                                GetComponent<SpriteRenderer>().color.g,
-                                                                GetComponent<SpriteRenderer>().color.b,
-                                                                Mathf.Lerp(GetComponent<SpriteRenderer>().color.a, 1, Time.deltaTime * 10));
-            transform.GetChild(0).GetComponent<SpriteRenderer>().color = new Color(transform.GetChild(0).GetComponent<SpriteRenderer>().color.r,
-                                                                                    transform.GetChild(0).GetComponent<SpriteRenderer>().color.g,
-                                                                                    transform.GetChild(0).GetComponent<SpriteRenderer>().color.b,
-                                                                                    Mathf.Lerp(GetComponent<SpriteRenderer>().color.a, 1, Time.deltaTime * 40));
-        }
-        else
-        {
-            GetComponent<BoxCollider2D>().enabled = false;
             GetComponent<SpriteRenderer>().color = new Color(GetComponent<SpriteRenderer>().color.r,
                                                                 GetComponent<SpriteRenderer>().color.g,
                                                                 GetComponent<SpriteRenderer>().color.b,
@@ -81,8 +44,19 @@ public class AdenwardShield : NetworkEntity
                                                                                     transform.GetChild(0).GetComponent<SpriteRenderer>().color.b,
                                                                                     Mathf.Lerp(GetComponent<SpriteRenderer>().color.a, 0, Time.deltaTime * 40));
         }
+        else
+        {
+            GetComponent<BoxCollider2D>().enabled = true;
 
-        
+            GetComponent<SpriteRenderer>().color = new Color(GetComponent<SpriteRenderer>().color.r,
+                                                                GetComponent<SpriteRenderer>().color.g,
+                                                                GetComponent<SpriteRenderer>().color.b,
+                                                                Mathf.Lerp(GetComponent<SpriteRenderer>().color.a, 1, Time.deltaTime * 10));
+            transform.GetChild(0).GetComponent<SpriteRenderer>().color = new Color(transform.GetChild(0).GetComponent<SpriteRenderer>().color.r,
+                                                                                    transform.GetChild(0).GetComponent<SpriteRenderer>().color.g,
+                                                                                    transform.GetChild(0).GetComponent<SpriteRenderer>().color.b,
+                                                                                    Mathf.Lerp(GetComponent<SpriteRenderer>().color.a, 1, Time.deltaTime * 40));
+        }
     }
 
     public override void Dead()
@@ -92,9 +66,7 @@ public class AdenwardShield : NetworkEntity
 
     IEnumerator RespawnProcess()
     {
-        GetComponent<BoxCollider2D>().enabled = false;
         yield return new WaitForSeconds(5);
-        GetComponent<BoxCollider2D>().enabled = true;
         Revive();
     }
 }

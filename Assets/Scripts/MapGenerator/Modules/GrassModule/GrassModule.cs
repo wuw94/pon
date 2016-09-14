@@ -14,8 +14,13 @@ public class GrassModule : Module
 
     public override void Draw()
     {
+
         for (int x = 0; x < map.dimension.x; x++)
             for (int y = 0; y < map.dimension.y; y++)
                 MapGenerator.AddToTexture(ref texture, new Vector2(x, y), grass);
+    }
+
+    public override void Reset()
+    {
     }
 }

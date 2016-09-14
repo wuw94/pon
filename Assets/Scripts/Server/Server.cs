@@ -7,10 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public enum MenuPage
-{
-    Home, Creating, Listing, Joining
-}
+
 
 /// <summary>
 /// Server.
@@ -21,34 +18,48 @@ public enum MenuPage
 /// </summary>
 public class Server : NetworkManager
 {
-    [HideInInspector]
-    public string player_name = "Boring Name";
-    //private string try_ip;
-
+    
     /// <summary>
     /// Our list of connections (in int based on a connection's connectionId).
     /// </summary>
     [HideInInspector]
     public int[] connections = new int[10] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
-    public MenuPage current_page = MenuPage.Home;
-
-    private List<MatchInfoSnapshot> match_snapshots = new List<MatchInfoSnapshot>();
 
     
 
     private void Start()
     {
-        NetworkManager.singleton.StartMatchMaker();
-        StartCoroutine(RefreshListing());
+        StartMatchMaker();
+        //StartCoroutine(RefreshListing());
     }
 
+    private void Update()
+    {
+        if (SceneManager.GetActiveScene().name == offlineScene)
+        {
+            if (Menu.current == MenuPage.PG_Listing)
+                ListInternetMatches();
+        }
+    }
+
+    public void ExitMatchToHome()
+    {
+        if (SceneManager.GetActiveScene().name == offlineScene)
+        {
+            Debug.LogError("Calling in wrong scene");
+            return;
+        }
+        StopHost();
+        Menu.current = MenuPage.PG_Home;
+        StartMatchMaker();
+    }
 
     private IEnumerator RefreshListing()
     {
         while (SceneManager.GetActiveScene().name == offlineScene)
         {
-            if (current_page == MenuPage.Listing)
+            if (Menu.current == MenuPage.PG_Listing)
                 ListInternetMatches();
             yield return new WaitForSeconds(1);
         }
@@ -85,129 +96,30 @@ public class Server : NetworkManager
     
 
     
-    private void OnGUI()
-    {
-        /*
-        GUISkin gskn = Resources.Load<GUISkin>("GUI Skins/Menu");
-        GUI.BeginGroup(new Rect(Screen.width / 2 - 150, Screen.height / 2 - 150, 300, 300), gskn.FindStyle("Title Screen"));
-        GUI.Box(new Rect(0, 0, 300, 300), "This is the title of a box", gskn.FindStyle("Title Screen"));
-        GUI.Button(new Rect(0, 25, 100, 20), "I am a button", gskn.FindStyle("Title Screen"));
-        GUI.Label(new Rect(0, 50, 100, 20), "I'm a Label!", gskn.FindStyle("Title Screen"));
-        GUI.EndGroup();
-        */
-
-        // ________________________------------------------
-        if (SceneManager.GetActiveScene().name == offlineScene)
-        {
-            if (current_page == MenuPage.Home)
-            {
-                // Your Name
-                GUI.Label(new Rect(Screen.width / 2, Screen.height / 2 - 20, 150, 20), "Your Name");
-                player_name = GUI.TextField(new Rect(Screen.width / 2, Screen.height / 2, 150, 20), player_name, 15);
-
-                // Create Game
-                if (GUI.Button(new Rect(Screen.width / 2, Screen.height / 2 + 40, 150, 20), "Create Match") && player_name != "")
-                    CreateInternetMatch();
-
-                // Join Game
-                if (GUI.Button(new Rect(Screen.width / 2, Screen.height / 2 + 60, 150, 20), "Join Match") && player_name != "")
-                {
-                    current_page = MenuPage.Listing;
-                    ListInternetMatches();
-                }
-            }
-
-            if (current_page == MenuPage.Listing)
-            {
-                GUI.Label(new Rect(10, 20, 300, 20), "Hello [" + player_name + "]. Here are your matches");
-                if (GUI.Button(new Rect(300,20, 60, 20), "Back"))
-                {
-                    current_page = MenuPage.Home;
-                }
-                for (int i = 0; i < match_snapshots.Count; i++)
-                {
-                    if (GUI.Button(new Rect(10, 40 + 20 * i, 300, 20), match_snapshots[i].name + " " + match_snapshots[i].currentSize + "/" + match_snapshots[i].maxSize))
-                    {
-                        JoinInternetMatch(match_snapshots[i]);
-                    }
-                }
-            }
-
-            // Make Local Game (For Debugging)
-            if (Input.GetKey(KeyCode.RightControl))
-            {
-                GUI.Label(new Rect(Screen.width - 200, Screen.height - 20, 200, 20), "For debugging. No touchie!");
-                if (GUI.Button(new Rect(Screen.width - 40, Screen.height - 20, 20, 20), "C"))
-                {
-                    player_name = "host";
-                    StartHost();
-                }
-                if (GUI.Button(new Rect(Screen.width - 20, Screen.height - 20, 20, 20), "J"))
-                {
-                    player_name = "client";
-                    networkAddress = "localhost";
-                    StartClient();
-                }
-            }
-        }
-
-    }
+    
 
     // ------------------------------------------------- Matchmaking Handlers -------------------------------------------------
 
     //call this method to request a match to be created on the server
-    private void CreateInternetMatch()
+    public void CreateInternetMatch(string player_name)
     {
         string match_name = player_name + "'s Game";
-        NetworkManager.singleton.matchMaker.CreateMatch(match_name, matchSize, true, "", "", "", 0, 0, OnInternetMatchCreate);
+        matchMaker.CreateMatch(match_name, matchSize, true, "", "", "", 0, 0, OnMatchCreate);
     }
 
-    private void OnInternetMatchCreate(bool success, string extendedInfo, MatchInfo responseData)
+    public void ListInternetMatches()
     {
-        if (success)
-        {
-            MatchInfo hostInfo = responseData;
-            NetworkServer.Listen(hostInfo, 9000);
-            NetworkManager.singleton.StartHost(hostInfo);
-        }
-        else
-        {
-            Debug.LogError("Create match failed");
-        }
+        matchMaker.ListMatches(0, 5, "", false, 0, 0, OnMatchList);
     }
 
-    private void ListInternetMatches()
+    public void JoinInternetMatch(MatchInfoSnapshot mis)
     {
-        NetworkManager.singleton.matchMaker.ListMatches(0, 5, "", false, 0, 0, OnInternetMatchList);
+        matchMaker.JoinMatch(mis.networkId, "", "", "", 0, 0, OnMatchJoined);
     }
 
-    private void OnInternetMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> responseData)
+    public void DestroyInternetMatch()
     {
-        if (success)
-            match_snapshots = new List<MatchInfoSnapshot>();
-            if (responseData.Count != 0)
-                foreach (MatchInfoSnapshot m_info in responseData)
-                    match_snapshots.Add(m_info);
-    }
-
-
-    private void JoinInternetMatch(MatchInfoSnapshot mis)
-    {
-        NetworkManager.singleton.matchMaker.JoinMatch(mis.networkId, "", "", "", 0, 0, OnInternetMatchJoin);
-    }
-
-    private void OnInternetMatchJoin(bool success, string extendedInfo, MatchInfo responseData)
-    {
-        if (success)
-        {
-            Debug.Log("Able to join a match");
-            MatchInfo hostInfo = responseData;
-            NetworkManager.singleton.StartClient(hostInfo);
-        }
-        else
-        {
-            Debug.LogError("Join match failed");
-        }
+        matchMaker.DestroyMatch(matchInfo.networkId, 0, OnDestroyMatch);
     }
 
 
@@ -228,6 +140,7 @@ public class Server : NetworkManager
     {
         base.OnClientDisconnect(conn);
         Debug.Log("OnClientDisconnect");
+        ExitMatchToHome();
     }
 
     public override void OnClientNotReady(NetworkConnection conn)
@@ -345,4 +258,5 @@ public class Server : NetworkManager
         Debug.Log("OnStopServer");
     }
 
+    
 }

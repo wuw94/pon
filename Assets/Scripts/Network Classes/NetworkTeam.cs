@@ -133,13 +133,14 @@ public abstract class NetworkTeam : NetworkBehaviour
             return;
         if (GetTeam() == Team.Neutral)
             OnDisplayNeutral();
-        else if (GetTeam() == Player.mine.character.GetTeam())
+        else if (GetTeam() == Player.mine.selected_team)
             OnDisplayAlly();
         else
             OnDisplayEnemy();
         if (hasAuthority)
             OnDisplayMine();
     }
+
 
     /// <summary>
     /// Wait for a number of frames for authority to be assigned, since
