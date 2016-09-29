@@ -15,7 +15,11 @@ public class Bullet : NetworkTeam
     // Prefab for creating a bullet trail
     public GameObject trail_prefab;
 
+    // Prefab for creating a bullet hit animation
     public GameObject hit_prefab;
+
+    // Prefab for creating a muzzle flash animation
+    public GameObject muzzle_flash_prefab;
 
     public void Initialize(Vector2 start_point, float[] angles, float max_distance)
     {
@@ -37,6 +41,8 @@ public class Bullet : NetworkTeam
     {
         if (!hasAuthority)
         {
+            // Make Muzzle Flash
+            Instantiate(muzzle_flash_prefab, this._start_point, Quaternion.Euler(0, 0, _angles[0]));
             foreach (float angle in _angles)
             {
                 Quaternion direction = Quaternion.Euler(0, 0, angle);

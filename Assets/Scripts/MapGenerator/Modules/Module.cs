@@ -64,6 +64,7 @@ public abstract class Module : NetworkBehaviour
     private void MakeOccludedObject()
     {
         this.occluded = new GameObject();
+        this.occluded.isStatic = true;
         this.occluded.name = "Occluded";
         this.occluded.transform.position = this.transform.position;
         this.occluded.transform.parent = this.transform;

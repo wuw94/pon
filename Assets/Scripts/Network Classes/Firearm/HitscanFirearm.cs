@@ -5,6 +5,9 @@ public abstract class HitscanFirearm : Firearm
 {
     protected void FireToward(float[] angles)
     {
+        // Make Muzzle Flash
+        Instantiate(projectile.GetComponent<Bullet>().muzzle_flash_prefab, owner.attacking_offset.position, Quaternion.Euler(0, 0, angles[0]));
+
         foreach (float angle in angles)
         {
             Quaternion direction = Quaternion.Euler(0, 0, angle);

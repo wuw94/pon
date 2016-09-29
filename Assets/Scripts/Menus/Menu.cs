@@ -13,7 +13,7 @@ using System.Collections.Generic;
 /// </summary>
 public enum MenuPage
 {
-    PG_Home, PG_Listing, IG_ConfigureGame, IG_LoadingMap, IG_Gameplay, IG_MenuHome,
+    PG_Home, PG_Listing, IG_ConfigureGame, IG_LoadingMap, IG_Gameplay, IG_MenuHome, IG_SwitchCharacter
 }
 
 public sealed class Menu : MonoBehaviour
@@ -37,9 +37,10 @@ public sealed class Menu : MonoBehaviour
     private const int PG_GROUP_WIDTH = 600;
     private const int PG_GROUP_HEIGHT = 400;
 
-    private const int IG_GROUP_WIDTH = 150;
+    private const int IG_GROUP_WIDTH = 180;
     private const int IG_GROUP_HEIGHT = 400;
 
+    
     private void Update()
     {
         c = current;
@@ -52,6 +53,7 @@ public sealed class Menu : MonoBehaviour
     // ------------------------------------------------- OnGUI -------------------------------------------------
     private void OnGUI()
     {
+
         // PG Pre-Game Scene
         if (SceneManager.GetActiveScene().name == NetworkManager.singleton.offlineScene)
         {
@@ -74,6 +76,8 @@ public sealed class Menu : MonoBehaviour
                     GUI_IG_Gameplay();
                 else if (current == MenuPage.IG_MenuHome)
                     GUI_IG_MenuHome();
+                else if (current == MenuPage.IG_SwitchCharacter)
+                    GUI_IG_SwitchCharacter();
             }
         }
 
@@ -201,7 +205,7 @@ public sealed class Menu : MonoBehaviour
         // Attacking Players
         for (int i = 0; i < attacking_players.Count; i++)
         {
-            GUI.Label(new Rect(0, 80 + 30 * i, PG_GROUP_WIDTH / 3, 30), attacking_players[i].player_name + " - " + attacking_players[i].possible_characters[attacking_players[i].selected_character].name);
+            GUI.Label(new Rect(0, 80 + 30 * i, PG_GROUP_WIDTH / 3, 30), attacking_players[i].player_name);
         }
         if (Player.mine.selected_team != Team.A)
             if (GUI.Button(new Rect(20, 80 + 30 * attacking_players.Count, PG_GROUP_WIDTH / 3 - 40, 30), "Join Team"))
@@ -210,7 +214,7 @@ public sealed class Menu : MonoBehaviour
         // Defending Players
         for (int i = 0; i < defending_players.Count; i++)
         {
-            GUI.Label(new Rect(PG_GROUP_WIDTH * 2 / 3, 80 + 30 * i, PG_GROUP_WIDTH / 3, 30), defending_players[i].player_name + " - " + defending_players[i].possible_characters[defending_players[i].selected_character].name);
+            GUI.Label(new Rect(PG_GROUP_WIDTH * 2 / 3, 80 + 30 * i, PG_GROUP_WIDTH / 3, 30), defending_players[i].player_name);
         }
         if (Player.mine.selected_team != Team.B)
             if (GUI.Button(new Rect(PG_GROUP_WIDTH * 2 / 3 + 20, 80 + 30 * defending_players.Count, PG_GROUP_WIDTH / 3 - 40, 30), "Join Team"))
@@ -220,16 +224,6 @@ public sealed class Menu : MonoBehaviour
             GUI.Label(new Rect(PG_GROUP_WIDTH * 1 / 3, 80 + 30 * i, PG_GROUP_WIDTH / 3, 30), neutral_players[i].player_name);
 
 
-        if (Player.mine.selected_team != Team.Neutral)
-        {
-            GUI.Label(new Rect(0, PG_GROUP_HEIGHT - 80, PG_GROUP_WIDTH, 30), "Selected Character");
-            GUI.Label(new Rect(0, PG_GROUP_HEIGHT - 60, PG_GROUP_WIDTH, 30), Player.mine.possible_characters[Player.mine.selected_character].name);
-
-            if (GUI.Button(new Rect(PG_GROUP_WIDTH / 2 - 60, PG_GROUP_HEIGHT - 60, 20, 20), "<"))
-                Player.mine.CmdPreviousCharacter();
-            if (GUI.Button(new Rect(PG_GROUP_WIDTH / 2 + 40, PG_GROUP_HEIGHT - 60, 20, 20), ">"))
-                Player.mine.CmdNextCharacter();
-        }
 
         if (Player.mine.is_host && neutral_players.Count == 0)
             if (GUI.Button(new Rect(PG_GROUP_WIDTH - 80, PG_GROUP_HEIGHT - 50, 60, 30), "Start"))
@@ -271,15 +265,57 @@ public sealed class Menu : MonoBehaviour
         GUI.Box(new Rect(0, 0, IG_GROUP_WIDTH, IG_GROUP_HEIGHT), "");
         GUI.Label(new Rect(0, 0, IG_GROUP_WIDTH, IG_GROUP_HEIGHT), "menu", MenuSkin.FindStyle("MenuTitle"));
 
+
+        if (GUI.Button(new Rect(15, 50, IG_GROUP_WIDTH - 30, 30), "Back to Game"))
+        {
+            Back();
+        }
+
+        if (GUI.Button(new Rect(15, 80, IG_GROUP_WIDTH - 30, 30), "Switch Character"))
+        {
+            current = MenuPage.IG_SwitchCharacter;
+        }
+
+        if (GUI.Button(new Rect(15, 110, IG_GROUP_WIDTH - 30, 30), "N/A"))
+        {
+        }
+
+
         if (Player.mine.is_host)
-            if (GUI.Button(new Rect(IG_GROUP_WIDTH / 2 - 60, 50, 120, 30), "Swap Sides"))
+            if (GUI.Button(new Rect(15, 325, IG_GROUP_WIDTH - 30, 30), "Swap Sides"))
             {
                 FindObjectOfType<MapGenerator>().Reset();
                 Back();
             }
 
-        if (GUI.Button(new Rect(IG_GROUP_WIDTH / 2 - 60, 355, 120, 30), "Quit"))
+        if (GUI.Button(new Rect(15, 355, IG_GROUP_WIDTH - 30, 30), "Quit"))
             FindObjectOfType<Server>().ExitMatchToHome();
+        GUI.EndGroup();
+    }
+
+
+    private void GUI_IG_SwitchCharacter()
+    {
+
+        GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), MenuOverlay);
+        GUI.skin = MenuSkin;
+
+        GUI.BeginGroup(new Rect(Screen.width / 2 - 300, Screen.height / 2 - 200, PG_GROUP_WIDTH, PG_GROUP_HEIGHT));
+        GUI.Box(new Rect(0, 0, PG_GROUP_WIDTH, PG_GROUP_HEIGHT), "");
+        GUI.Label(new Rect(0, 0, PG_GROUP_WIDTH, PG_GROUP_HEIGHT), "Switch Character", MenuSkin.FindStyle("MenuTitle"));
+
+        
+        GUI.Label(new Rect(0, PG_GROUP_HEIGHT / 2, PG_GROUP_WIDTH, 30), Player.mine.possible_characters[Player.mine.selected_character].name);
+
+        if (GUI.Button(new Rect(PG_GROUP_WIDTH / 2 - 70, PG_GROUP_HEIGHT / 2, 30, 30), "<"))
+            Player.mine.CmdPreviousCharacter();
+        if (GUI.Button(new Rect(PG_GROUP_WIDTH / 2 + 50, PG_GROUP_HEIGHT / 2, 30, 30), ">"))
+            Player.mine.CmdNextCharacter();
+
+
+        if (GUI.Button(new Rect(PG_GROUP_WIDTH / 2 - 60, 355, 120, 30), "Done (Esc)"))
+            Back();
+
         GUI.EndGroup();
     }
 
@@ -319,6 +355,12 @@ public sealed class Menu : MonoBehaviour
             case MenuPage.IG_MenuHome:
                 {
                     Menu.current = MenuPage.IG_Gameplay;
+                    break;
+                }
+            case MenuPage.IG_SwitchCharacter:
+                {
+                    Menu.current = MenuPage.IG_Gameplay;
+                    Player.mine.SwitchCharacter(Player.mine.selected_character);
                     break;
                 }
         }

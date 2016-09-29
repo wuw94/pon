@@ -46,8 +46,8 @@ public abstract class NetworkTeam : NetworkBehaviour
     private Team _team = Team.Neutral; // What team this entity belongs to
 
     public readonly Color white = new Color(1, 1, 1, 1);
-    public readonly Color blue = new Color(0.304f, 0.304f, 1, 1);
-    public readonly Color red = new Color(1, 0.304f, 0.304f, 1);
+    public readonly Color blue = new Color(0.404f, 0.404f, 1, 1);
+    public readonly Color red = new Color(1, 0.404f, 0.404f, 1);
 
 
     public virtual void Start()

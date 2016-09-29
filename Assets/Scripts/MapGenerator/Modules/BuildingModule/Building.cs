@@ -6,12 +6,12 @@ using System.Linq;
 [Serializable]
 public class Building : Container
 {
-    private const int MAX_ROOMS = 8;
+    private const int MAX_ROOMS = 14;
     private const int ROOM_SIZE_GUARANTEES_OBJECTIVE = 5;
     private readonly IntRange ROOM_SIZE = new IntRange(2, 6);
-    private const int CONTROL_POINT_SIZE = 6;
-    private const float CHANCE_FOR_ENTRANCE_OUTSIDE = 0.5f;
-    private const float CHANCE_FOR_ENTRANCE_OUTSIDE_EXTRA = 0.3f;
+    private const int CONTROL_POINT_SIZE = 4;
+    private const float CHANCE_FOR_ENTRANCE_OUTSIDE = 0.7f;
+    private const float CHANCE_FOR_ENTRANCE_OUTSIDE_EXTRA = 0.5f;
     private const int MIN_ENTRANCE_PER_ROOM = 2;
     private const float CHANCE_FOR_WINDOW_INSIDE = 0.4f;
     private const float CHANCE_FOR_WINDOW_OUTSIDE = 0.4f;

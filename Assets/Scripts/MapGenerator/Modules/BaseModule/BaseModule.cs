@@ -27,8 +27,8 @@ public class BaseModule : Module
 
     public override void Draw()
     {
-        MapGenerator.AddToTexture(ref texture, SpawnA, floor);
-        MapGenerator.AddToTexture(ref texture, SpawnB, floor);
+        //MapGenerator.AddToTexture(ref texture, SpawnA, floor);
+        //MapGenerator.AddToTexture(ref texture, SpawnB, floor);
     }
 
     public override void Reset()

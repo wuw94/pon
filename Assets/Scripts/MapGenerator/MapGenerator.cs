@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 using System.Collections;
+
 using System.Collections.Generic;
 
 public class MapGenerator : NetworkBehaviour
@@ -12,6 +14,9 @@ public class MapGenerator : NetworkBehaviour
     public UsageChart usage_chart;
     public Module[] modules;
 
+    public GameObject SpawnRoomA;
+    public GameObject SpawnRoomB;
+
     public void Awake()
     {
         usage_chart = new UsageChart(dimension);
@@ -20,6 +25,8 @@ public class MapGenerator : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
+        if (SceneManager.GetActiveScene().name == "GeneratorTester")
+            StartCoroutine(BeginGeneration());
     }
 
 
@@ -29,6 +36,7 @@ public class MapGenerator : NetworkBehaviour
         {
             RpcSwitchToLoading();
             yield return new WaitForSeconds(0.1f);
+
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
@@ -39,6 +47,8 @@ public class MapGenerator : NetworkBehaviour
                 modules[i] = go.GetComponent<Module>();
             }
             Debug.Log(name + " took " + stopwatch.ElapsedMilliseconds + "ms to complete.");
+            
+
             StartCoroutine(WaitForDone());
             StartCoroutine(WaitForAllPlayersToFinishLoading());
         }
@@ -80,6 +90,11 @@ public class MapGenerator : NetworkBehaviour
                 break;
             yield return null;
         }
+
+        SpawnRoomA = Instantiate(SpawnRoomA);
+        SpawnRoomB = Instantiate(SpawnRoomB);
+        NetworkServer.Spawn(SpawnRoomA);
+        NetworkServer.Spawn(SpawnRoomB);
         foreach (Player p in FindObjectsOfType<Player>())
             p.RpcBeginSequence();
     }

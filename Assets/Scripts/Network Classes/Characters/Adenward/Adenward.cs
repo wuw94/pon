@@ -37,6 +37,8 @@ public class Adenward : Character
     // Skill 2 (Safeguard) Space
     private const float _skill2_cooldown = 1.0f;
 
+    public GameObject adenward_dash_to_image;
+
     public override void OnStartServer()
     {
         base.OnStartServer();
@@ -56,6 +58,31 @@ public class Adenward : Character
         ability_skill2.SetCooldown(_skill2_cooldown);
         ability_skill2.name = "Safeguard";
         StartCoroutine(LookForShield());
+    }
+
+    public override void OnStartAuthority()
+    {
+        base.OnStartAuthority();
+        adenward_dash_to_image = Instantiate<GameObject>(adenward_dash_to_image);
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        ManageDashToImage();
+    }
+
+    private void ManageDashToImage()
+    {
+        Character c = GetClosestAllyToMouse();
+        if (c == null)
+            adenward_dash_to_image.GetComponent<SpriteRenderer>().color = new Color(0.304f, 0.404f, 1, 0);
+        else
+        {
+            adenward_dash_to_image.transform.position = c.transform.position;
+            adenward_dash_to_image.transform.rotation = Face(adenward_dash_to_image.transform.position, transform.position);
+            adenward_dash_to_image.GetComponent<SpriteRenderer>().color = new Color(0.5f, 0.6f, 1, 0.5f);
+        }
     }
 
     public IEnumerator LookForShield()
@@ -94,6 +121,11 @@ public class Adenward : Character
 
     public override void Passive()
     {
+        if (SA_stunned)
+        {
+            stronghold_mode = false;
+            timer_shield = 1;
+        }
         if (stronghold_mode)
         {
             CmdInflictRoot(0.5f);
@@ -194,6 +226,7 @@ public class Adenward : Character
 
     public override void OnDestroy()
     {
+        Destroy(adenward_dash_to_image.gameObject);
         base.OnDestroy();
     }
 }

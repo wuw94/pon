@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using System.Collections;
 using System.Collections.Generic;
 
 public class Nucleus : NetworkTeam
@@ -14,6 +15,43 @@ public class Nucleus : NetworkTeam
     [SyncVar]
     private float current_health = max_health;
 
+    private float lerp_health = max_health;
+
+
+    // GUI Stuff
+    public Texture2D hud;
+    public Texture2D bar;
+    public Texture2D[] glow;
+    public int glow_int = 0;
+
+    [SyncVar]
+    public bool show_glow = false;
+
+    public GUISkin bar_skin;
+
+    
+
+    public override void Start()
+    {
+        base.Start();
+        StartCoroutine(loopglow());
+    }
+
+
+    private IEnumerator loopglow()
+    {
+        while (true)
+        {
+            if (isServer)
+                show_glow = _dismantling.Count + _repairing.Count > 0 && current_health != max_health;
+
+            glow_int++;
+            if (glow_int >= glow.Length)
+                glow_int = 0;
+            yield return new WaitForSeconds(0.05f);
+        }
+    }
+
     public void OnGUI()
     {
         if (!isClient)
@@ -26,14 +64,23 @@ public class Nucleus : NetworkTeam
             return;
         if (Player.mine.character.GetTeam() == this.GetTeam())
         {
-            string ally_text = "Your Nucleus: " + (int)(current_health / max_health * 100) + "%";
-            GUI.Label(new Rect(Screen.width - 200, Screen.height - 40, 300, 100), ally_text);
+            GUI.skin = bar_skin;
+            GUI.DrawTexture(new Rect(Screen.width / 2 - hud.width / 2, 0, hud.width, hud.height), hud);
 
+            GUI.Box(new Rect(Screen.width / 2 - 135, 0, 20 + 250 * lerp_health / max_health, bar.height), "");
+            if (show_glow)
+                GUI.DrawTexture(new Rect(Screen.width / 2 - hud.width / 2 + 50 + 250 * lerp_health / max_health, 0, glow[glow_int].width, glow[glow_int].height), glow[glow_int]);
+            GUI.Label(new Rect(Screen.width / 2 - 150, 3, 300, 30), "Your Nucleus");
         }
         else
         {
-            string enemy_text = "Enemy Nucleus: " + (int)(current_health / max_health * 100) + "%";
-            GUI.Label(new Rect(Screen.width - 200, Screen.height - 40, 300, 100), enemy_text);
+            GUI.skin = bar_skin;
+            GUI.DrawTexture(new Rect(Screen.width / 2 - hud.width / 2, 0, hud.width, hud.height), hud);
+
+            GUI.Box(new Rect(Screen.width / 2 - 135, 0, 20 + 250 * lerp_health / max_health, bar.height), "");
+            if (show_glow)
+                GUI.DrawTexture(new Rect(Screen.width / 2 - hud.width / 2 + 50 + 250 * lerp_health / max_health, 0, glow[glow_int].width, glow[glow_int].height), glow[glow_int]);
+            GUI.Label(new Rect(Screen.width / 2 - 150, 3, 300, 30), "Enemy Nucleus");
         }
     }
 
@@ -93,23 +140,20 @@ public class Nucleus : NetworkTeam
     {
         base.Update();
         UpdateHealth();
-        GetComponent<SpriteRenderer>().color = new Color(   GetComponent<SpriteRenderer>().color.r,
-                                                            GetComponent<SpriteRenderer>().color.g,
-                                                            GetComponent<SpriteRenderer>().color.b,
-                                                            current_health / max_health);
+        lerp_health = Mathf.Lerp(lerp_health, current_health, Time.deltaTime * 20);
         RemoveDead();
     }
 
     private void RemoveDead()
     {
         foreach (Character c in _repairing)
-            if (c.IsDead())
+            if (c.IsDead() || c == null)
             {
                 _repairing.Remove(c);
                 break;
             }
         foreach (Character c in _dismantling)
-            if (c.IsDead())
+            if (c.IsDead() || c == null)
             {
                 _dismantling.Remove(c);
                 break;

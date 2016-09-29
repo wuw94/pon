@@ -1,7 +1,7 @@
 ﻿public static class Settings
 {
     public static string letters = "";
-    public static string PLAYER_NAME = "boringname";
+    public static string PLAYER_NAME = "";
 
     public static string[] LOADING_WORDS = new string[]{"a loading screen...",
                                                         "the wait begins...",

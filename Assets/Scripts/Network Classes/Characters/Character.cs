@@ -339,7 +339,8 @@ public abstract class Character : NetworkEntity
 
     protected void ShakeCamera(float intensity, float duration, Quaternion dir)
     {
-        Camera.main.GetComponent<LerpFollow>().Shake(intensity, duration, dir);
+        if (Camera.main != null && Camera.main.GetComponent<LerpFollow>() != null)
+            Camera.main.GetComponent<LerpFollow>().Shake(intensity, duration, dir);
     }
 
 
@@ -371,6 +372,13 @@ public abstract class Character : NetworkEntity
         transform.rotation = Quaternion.Euler(0, 0, AngleDeg - 90);
     }
 
+    protected Quaternion Face(Vector2 from, Vector2 toward)
+    {
+        float AngleRad = Mathf.Atan2(toward.y - from.y, toward.x - from.x);
+        float AngleDeg = (180 / Mathf.PI) * AngleRad;
+        return Quaternion.Euler(0, 0, AngleDeg - 90);
+    }
+
     /// <summary>
     /// Get the closest character to the mouse, besides yourself.
     /// </summary>
@@ -388,6 +396,8 @@ public abstract class Character : NetworkEntity
     protected Character GetClosestAllyToMouse()
     {
         Character to_return = null;
+        if (Camera.main == null)
+            return to_return;
         Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         foreach (Character c in FindObjectsOfType<Character>())
             if (c != this && c.GetTeam() == this.GetTeam() && c.is_visible && (to_return == null || Vector2.Distance(mouse, c.transform.position) < Vector2.Distance(mouse, to_return.transform.position)))

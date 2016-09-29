@@ -25,6 +25,9 @@ public class BuildingModule : Module
     public GameObject room_light;
     public GameObject building_light;
 
+    public Color[] light_colors;
+
+
     public Sprite2 building_floor;
     public Sprite2 debug_floor;
     
@@ -32,6 +35,11 @@ public class BuildingModule : Module
     public Sprite2 wall_east;
     public Sprite2 wall_south;
     public Sprite2 wall_west;
+
+    public Sprite2 wall_northwest;
+    public Sprite2 wall_northeast;
+    public Sprite2 wall_southwest;
+    public Sprite2 wall_southeast;
 
     public Sprite2 window_north;
     public Sprite2 window_east;
@@ -236,6 +244,7 @@ public class BuildingModule : Module
         DrawEntrances();
         DrawWindows();
         DrawWalls();
+        DrawCorners();
         
 
         MakeColliderWall();
@@ -314,6 +323,68 @@ public class BuildingModule : Module
         }
     }
 
+    private void DrawCorners()
+    {
+        List<PointDirection> all_walls = new List<PointDirection>();
+        foreach (PointDirection pd in _sync_walls)
+            all_walls.Add(pd);
+        foreach (PointDirection pd in _sync_walls)
+            if (!all_walls.Any(w => w == pd.OtherSide()))
+                all_walls.Add(pd.OtherSide());
+
+        List<PointDirection> all_windows = new List<PointDirection>();
+        foreach (PointDirection pd in _sync_windows)
+            all_windows.Add(pd);
+        foreach (PointDirection pd in _sync_windows)
+            if (!all_windows.Any(w => w == pd.OtherSide()))
+                all_windows.Add(pd.OtherSide());
+
+        List<PointDirection> all_entrances = new List<PointDirection>();
+        foreach (PointDirection pd in _sync_entrances)
+            all_entrances.Add(pd);
+        foreach (PointDirection pd in _sync_entrances)
+            if (!all_entrances.Any(w => w == pd.OtherSide()))
+                all_entrances.Add(pd.OtherSide());
+
+        List<PointDirection> all_everythings = all_walls.Union(all_windows).Union(all_entrances).ToList();
+
+        foreach (PointDirection pd in all_everythings)
+        {
+            if (pd.direction == Direction.South)
+            {
+                if (all_everythings.Any(w => w == new PointDirection(pd.point + Point.right + Point.down, Direction.West)) &&
+                    !all_everythings.Any(w => w == new PointDirection(pd.point + Point.right, Direction.West)) &&
+                    !all_everythings.Any(w => w == new PointDirection(pd.point + Point.right, Direction.South)))
+                    MapGenerator.AddToTexture(ref texture, pd.point + Point.right, wall_northeast);
+
+            }
+            if (pd.direction == Direction.East)
+            {
+                if (all_everythings.Any(w => w == new PointDirection(pd.point + Point.up + Point.right, Direction.South)) &&
+                    !all_everythings.Any(w => w == new PointDirection(pd.point + Point.up, Direction.South)) &&
+                    !all_everythings.Any(w => w == new PointDirection(pd.point + Point.up, Direction.East)))
+                    MapGenerator.AddToTexture(ref texture, pd.point + Point.up, wall_northwest);
+
+            }
+            if (pd.direction == Direction.North)
+            {
+                if (all_everythings.Any(w => w == new PointDirection(pd.point + Point.left + Point.up, Direction.East)) &&
+                    !all_everythings.Any(w => w == new PointDirection(pd.point + Point.left, Direction.East)) &&
+                    !all_everythings.Any(w => w == new PointDirection(pd.point + Point.left, Direction.North)))
+                    MapGenerator.AddToTexture(ref texture, pd.point + Point.left, wall_southwest);
+
+            }
+            if (pd.direction == Direction.West)
+            {
+                if (all_everythings.Any(w => w == new PointDirection(pd.point + Point.down + Point.left, Direction.North)) &&
+                    !all_everythings.Any(w => w == new PointDirection(pd.point + Point.down, Direction.North)) &&
+                    !all_everythings.Any(w => w == new PointDirection(pd.point + Point.down, Direction.West)))
+                    MapGenerator.AddToTexture(ref texture, pd.point + Point.down, wall_southeast);
+
+            }
+        }
+    }
+
     private void MakeLights()
     {
         foreach (Building b in buildings)
@@ -325,16 +396,22 @@ public class BuildingModule : Module
                                                     go.transform.position.z);
             NetworkServer.Spawn(go);
 
-            /*
+            
             foreach (Room r in b.rooms)
             {
+                /*
                 go = Instantiate<GameObject>(room_light);
                 go.transform.position = new Vector3((r.Left(Depth.World) + r.Right(Depth.World)) / 2.0f + MapGenerator.DRAW_PAD,
                                                     (r.Top(Depth.World) + r.Bottom(Depth.World)) / 2.0f + MapGenerator.DRAW_PAD,
                                                     go.transform.position.z);
+                Color c = light_colors[UnityEngine.Random.Range(0, light_colors.Length)];
+                go.GetComponent<Light>().color = c;
+                go.GetComponent<Light>().range = -30.0f + (r.width + r.height) * 10.0f;
+                go.GetComponent<Light>().spotAngle = 40 + 9.0f * (r.width + r.height);
                 NetworkServer.Spawn(go);
+                */
             }
-            */
+            
         }
     }
 
@@ -343,8 +420,8 @@ public class BuildingModule : Module
         foreach (Building b in buildings)
         {
             GameObject go = Instantiate<GameObject>(nucleus);
-            go.transform.position = new Vector3(    (b.Left(Depth.World) + b.Right(Depth.World)) / 2.0f + MapGenerator.DRAW_PAD - 3,
-                                                    (b.Top(Depth.World) + b.Bottom(Depth.World)) / 2.0f + MapGenerator.DRAW_PAD - 3,
+            go.transform.position = new Vector3(    (b.Left(Depth.World) + b.Right(Depth.World)) / 2.0f + MapGenerator.DRAW_PAD - 2,
+                                                    (b.Top(Depth.World) + b.Bottom(Depth.World)) / 2.0f + MapGenerator.DRAW_PAD - 2,
                                                     go.transform.position.z);
             NetworkServer.Spawn(go);
         }

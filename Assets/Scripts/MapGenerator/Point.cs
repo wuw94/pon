@@ -1,9 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.Networking;
-
-
-
-/// <summary>
+﻿/// <summary>
 /// Points are like Vector2's, but can only take in ints.
 /// </summary>
 [System.Serializable]

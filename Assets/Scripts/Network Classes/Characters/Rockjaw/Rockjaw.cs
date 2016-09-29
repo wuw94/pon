@@ -58,7 +58,7 @@ public class Rockjaw : Character
     public override void Skill1()
     {
         GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-        rockjaw_crunch.ShowLocal(this.transform.position + transform.rotation * (Vector2.up * 0.5f), this.transform.rotation);
+        rockjaw_crunch.ShowLocal(this.transform.position + transform.rotation * (Vector2.up * 0.5f), Quaternion.identity);
         CmdMakeRockjawCrunch();
         StartCoroutine(RockjawCrunch());
     }
@@ -68,7 +68,7 @@ public class Rockjaw : Character
     {
         RockjawCrunch rc = Instantiate<RockjawCrunch>(rockjaw_crunch);
         NetworkServer.SpawnWithClientAuthority(rc.gameObject, this.player.connectionToClient);
-        rc.Make(this.transform.position + transform.rotation * (Vector2.up * 0.5f), this.transform.rotation, this.GetTeam(), this.player.connectionToClient);
+        rc.Make(this.transform.position + transform.rotation * (Vector2.up * 0.5f), Quaternion.identity, this.GetTeam(), this.player.connectionToClient);
     }
 
     private IEnumerator RockjawCrunch()
