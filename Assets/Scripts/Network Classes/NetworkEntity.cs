@@ -68,10 +68,18 @@ public abstract class NetworkEntity : NetworkTeam
         return _is_dead;
     }
     
-    public void ChangeHealth(float amount)
+    public void ChangeHealth(Player source, float amount)
     {
         if (!isServer) // Changes to an entity's health should only be executed on the server
+        {
+            // If ChangeHealth is called on somebody other than the server, that means we want to show it locally.
+            _current_health += amount;
+            if (_current_health > max_health)
+                _current_health = max_health;
+            if (_current_health <= 0)
+                _current_health = 0;
             return;
+        }
 
         if (_current_health <= 0 || _is_dead)
             return;
@@ -88,7 +96,7 @@ public abstract class NetworkEntity : NetworkTeam
         {
             _current_health = 0;
             _is_dead = true;
-            Dead();
+            Dead(source);
         }
     }
 
@@ -123,5 +131,5 @@ public abstract class NetworkEntity : NetworkTeam
         _is_dead = false;
     }
 
-    public abstract void Dead();
+    public abstract void Dead(Player source);
 }

@@ -28,7 +28,9 @@ public abstract class HitscanFirearm : Firearm
             {
                 g.transform.localScale = new Vector3(g.transform.localScale.x, bullet_ray.ray.distance, g.transform.localScale.z);
                 Instantiate(projectile.GetComponent<Bullet>().hit_prefab, bullet_ray.ray.point, direction);
-                CmdDamage(bullet_ray.ray.collider.transform.GetComponent<NetworkIdentity>().netId);
+                NetworkInstanceId entity_hit_id = bullet_ray.ray.collider.transform.GetComponent<NetworkIdentity>().netId;
+                Damage(entity_hit_id);
+                CmdDamage(entity_hit_id);
             }
             else if (bullet_ray.hit == HitType.Wall) //  if we hit a wall
             {
@@ -91,10 +93,23 @@ public abstract class HitscanFirearm : Firearm
         NetworkEntity ne = ClientScene.FindLocalObject(hit).GetComponent<NetworkEntity>();
         float distance = Vector2.Distance(owner.attacking_offset.position, ne.transform.position);
         if (fall_off_type == FalloffType.Hard)
-            ne.ChangeHealth(-damage * (1 - distance / max_distance));
+            ne.ChangeHealth(owner.player, -damage * (1 - distance / max_distance));
         else if (fall_off_type == FalloffType.Medium)
-            ne.ChangeHealth(-damage * (1 - distance / max_distance) * 0.5f - damage * 0.5f);
+            ne.ChangeHealth(owner.player, -damage * (1 - distance / max_distance) * 0.5f - damage * 0.5f);
         else if (fall_off_type == FalloffType.None)
-            ne.ChangeHealth(-damage);
+            ne.ChangeHealth(owner.player, -damage);
+    }
+
+    // to be called before cmddamage (this is so the local client can see immediate change)
+    private void Damage(NetworkInstanceId hit)
+    {
+        NetworkEntity ne = ClientScene.FindLocalObject(hit).GetComponent<NetworkEntity>();
+        float distance = Vector2.Distance(owner.attacking_offset.position, ne.transform.position);
+        if (fall_off_type == FalloffType.Hard)
+            ne.ChangeHealth(owner.player, -damage * (1 - distance / max_distance));
+        else if (fall_off_type == FalloffType.Medium)
+            ne.ChangeHealth(owner.player, -damage * (1 - distance / max_distance) * 0.5f - damage * 0.5f);
+        else if (fall_off_type == FalloffType.None)
+            ne.ChangeHealth(owner.player, -damage);
     }
 }

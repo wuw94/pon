@@ -22,9 +22,9 @@ public class AdenwardShield : NetworkEntity
         {
             ChangeTeam(owner.GetTeam());
             if (owner.stronghold_mode)
-                ChangeHealth(Time.deltaTime * 150);
+                ChangeHealth(owner.player, Time.deltaTime * 150);
             else if (Time.time - time_of_recent_damage > WAIT_TIME_BEFORE_REGEN)
-                ChangeHealth(Time.deltaTime * 50);
+                ChangeHealth(owner.player, Time.deltaTime * 50);
         }
         ManageAlpha();
     }
@@ -59,7 +59,7 @@ public class AdenwardShield : NetworkEntity
         }
     }
 
-    public override void Dead()
+    public override void Dead(Player source)
     {
         StartCoroutine(RespawnProcess());
     }

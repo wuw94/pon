@@ -6,6 +6,7 @@ using UnityEngine.Networking;
 /// </summary>
 public class ClientCalculated : NetworkBehaviour
 {
+    public Character owner;
     public float timeout;
     public ClientCalculatedView view;
     public ClientCalculatedLogic logic;

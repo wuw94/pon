@@ -153,6 +153,7 @@ public class Adenward : Character
     private void CmdMakeAdenwardBash()
     {
         AdenwardBash ab = Instantiate<AdenwardBash>(adenward_bash);
+        ab.owner = this;
         NetworkServer.SpawnWithClientAuthority(ab.gameObject, this.player.connectionToClient);
         ab.Make(this.transform.position + transform.rotation * (Vector2.up * 0.5f), this.transform.rotation, this.GetTeam(), this.player.connectionToClient);
     }

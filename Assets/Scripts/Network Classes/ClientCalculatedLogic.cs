@@ -12,7 +12,7 @@ public class ClientCalculatedLogic : CharacterInteractor
     public float timeout;
 
     [SerializeField]
-    private ClientCalculated client_calculated;
+    protected ClientCalculated client_calculated;
     
     [ClientRpc]
     public void RpcMakeVisuals()

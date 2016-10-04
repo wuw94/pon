@@ -21,11 +21,11 @@ public class SpawnRoom : NetworkTeam
         {
             if (col.GetComponent<Character>().GetTeam() == this.GetTeam())
             {
-                col.GetComponent<Character>().ChangeHealth(200 * Time.deltaTime);
+                col.GetComponent<Character>().ChangeHealth(null, 200 * Time.deltaTime);
             }
             else
             {
-                col.GetComponent<Character>().ChangeHealth(-200 * Time.deltaTime);
+                col.GetComponent<Character>().ChangeHealth(null, -200 * Time.deltaTime);
             }
         }
     }

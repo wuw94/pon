@@ -415,8 +415,9 @@ public abstract class Character : NetworkEntity
         return to_return;
     }
 
-    public override void Dead()
+    public override void Dead(Player source)
     {
+        Debug.LogError(player.player_name + " killed by " + source.player_name);
         StartCoroutine(RespawnProcess());
     }
 

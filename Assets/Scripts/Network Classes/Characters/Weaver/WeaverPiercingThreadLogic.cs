@@ -16,7 +16,7 @@ public class WeaverPiercingThreadLogic : ClientCalculatedLogic
     {
         yield return new WaitForSeconds(timeout);
         foreach (Character enemy in enemies_held)
-            enemy.ChangeHealth(-damage);
+            enemy.ChangeHealth(client_calculated.owner.player, -damage);
         Destroy(this.gameObject);
     }
 }

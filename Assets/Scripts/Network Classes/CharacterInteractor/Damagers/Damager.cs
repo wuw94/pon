@@ -9,11 +9,11 @@
 
     public void DamageCharacter(Character c)
     {
-        c.ChangeHealth(-damage);
+        //c.ChangeHealth(-damage);
     }
 
     public void DamageCharacter(Character c, float percentage)
     {
-        c.ChangeHealth(-damage * percentage);
+        //c.ChangeHealth(-damage * percentage);
     }
 }

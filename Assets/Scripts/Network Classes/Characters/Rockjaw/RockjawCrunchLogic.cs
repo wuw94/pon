@@ -35,6 +35,7 @@ public class RockjawCrunchLogic : ClientCalculatedLogic
 
     private IEnumerator WaitForDamage()
     {
+        Player source = client_calculated.owner.player;
         while (damage_occur > 0)
         {
             damage_occur -= Time.deltaTime;
@@ -46,6 +47,6 @@ public class RockjawCrunchLogic : ClientCalculatedLogic
             yield return null;
         }
         if (character_held != null)
-            character_held.ChangeHealth(-damage);
+            character_held.ChangeHealth(source, -damage);
     }
 }

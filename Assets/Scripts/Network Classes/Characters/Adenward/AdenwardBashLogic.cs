@@ -25,7 +25,7 @@ public class AdenwardBashLogic : ClientCalculatedLogic
         base.OnEnemyEnter(c);
         if (dmg_timer > 0 && !enemies_hit.Contains(c))
         {
-            c.ChangeHealth(-damage);
+            c.ChangeHealth(client_calculated.owner.player, -damage);
             enemies_hit.Add(c);
         }
     }
