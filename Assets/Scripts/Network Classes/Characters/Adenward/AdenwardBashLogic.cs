@@ -1,9 +1,13 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
 
-public class AdenwardBashLogic : ClientCalculatedLogic
+public class AdenwardBashLogic : CharacterInteractor
 {
+    [SyncVar]
+    public NetworkInstanceId owner_id;
+
     public float damage;
     public float dmg_timer;
     private List<Character> enemies_hit = new List<Character>();
@@ -25,14 +29,14 @@ public class AdenwardBashLogic : ClientCalculatedLogic
         base.OnEnemyEnter(c);
         if (dmg_timer > 0 && !enemies_hit.Contains(c))
         {
-            c.ChangeHealth(client_calculated.owner.player, -damage);
+            c.ChangeHealth(ClientScene.FindLocalObject(owner_id).GetComponent<Character>().player, -damage);
             enemies_hit.Add(c);
         }
     }
 
     private IEnumerator Timeout()
     {
-        yield return new WaitForSeconds(timeout);
+        yield return new WaitForSeconds(1);
         Destroy(this.gameObject);
     }
 }

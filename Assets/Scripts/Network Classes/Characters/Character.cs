@@ -415,8 +415,17 @@ public abstract class Character : NetworkEntity
 
     public override void Dead(Player source)
     {
-		Debug.LogError(player.name + " killed by " + source.name);
+        if (source == null)
+            RpcAddToKillFeed(" >-X-> " + player.name);
+        else
+            RpcAddToKillFeed(source.name + " >-X-> " + player.name);
         StartCoroutine(RespawnProcess());
+    }
+
+    [ClientRpc]
+    private void RpcAddToKillFeed(string s)
+    {
+        GameplayGUI.singleton.kill_feed.Add(s);
     }
 
     IEnumerator RespawnProcess()

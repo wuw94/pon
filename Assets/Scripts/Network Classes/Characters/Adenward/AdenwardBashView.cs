@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 
-public class AdenwardBashView : ClientCalculatedView
+public class AdenwardBashView : MonoBehaviour
 {
     private float scale = 0.02f;
     // Fadeaway
-	public override void Update()
+	public void Update()
     {
         transform.localScale = new Vector3(transform.localScale.x + scale,
                                             transform.localScale.y + scale,

@@ -21,7 +21,8 @@ public class Adenward : Character
     private float timer_shield;
 
     // Primary Weapon
-    public AdenwardBash adenward_bash;
+    public AdenwardBashLogic adenward_bash_logic;
+    public AdenwardBashView adenward_bash_view;
     private const float _primary_cooldown = 0.5f;
 
 
@@ -139,7 +140,9 @@ public class Adenward : Character
     {
         ShakeCamera(0.02f, 0.05f, Quaternion.Euler(0, 0, GetMouseDirection(attacking_offset.position)));
         CmdSetShieldTimer();
-        adenward_bash.ShowLocal(this.transform.position + transform.rotation * (Vector2.up * 0.5f), this.transform.rotation);
+        AdenwardBashView abv = Instantiate(adenward_bash_view);
+        abv.transform.position = this.transform.position + transform.rotation * (Vector2.up * 0.5f);
+        abv.transform.rotation = this.transform.rotation;
         CmdMakeAdenwardBash();
     }
 
@@ -152,10 +155,25 @@ public class Adenward : Character
     [Command]
     private void CmdMakeAdenwardBash()
     {
-        AdenwardBash ab = Instantiate<AdenwardBash>(adenward_bash);
-        ab.owner = this;
-        NetworkServer.SpawnWithClientAuthority(ab.gameObject, this.player.connectionToClient);
-        ab.Make(this.transform.position + transform.rotation * (Vector2.up * 0.5f), this.transform.rotation, this.GetTeam(), this.player.connectionToClient);
+        AdenwardBashLogic abl = Instantiate(adenward_bash_logic);
+        abl.transform.position = this.transform.position + transform.rotation * (Vector2.up * 0.5f);
+        abl.transform.rotation = this.transform.rotation;
+
+        abl.owner_id = netId;
+        abl.PreSpawnChangeTeam(GetTeam());
+        NetworkServer.Spawn(abl.gameObject);
+        RpcMakeAdenwardBash();
+    }
+
+    [ClientRpc]
+    private void RpcMakeAdenwardBash()
+    {
+        if (player == Player.mine)
+            return;
+        AdenwardBashView abv = Instantiate(adenward_bash_view);
+        abv.GetComponent<SpriteRenderer>().color = this.GetComponent<SpriteRenderer>().color;
+        abv.transform.position = this.transform.position + transform.rotation * (Vector2.up * 0.5f);
+        abv.transform.rotation = this.transform.rotation;
     }
 
     // melee no reload lol

@@ -44,6 +44,11 @@ public class Player : NetworkBehaviour
     [SyncVar]
     public bool can_choose_character = true;
 
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        name = _player_name;
+    }
 
     // Stuff to do just to a client player right when it loads
     public override void OnStartLocalPlayer()

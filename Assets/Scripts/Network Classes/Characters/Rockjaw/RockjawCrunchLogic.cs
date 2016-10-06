@@ -1,8 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 using System.Collections;
 
-public class RockjawCrunchLogic : ClientCalculatedLogic
+public class RockjawCrunchLogic : CharacterInteractor
 {
+    [SyncVar]
+    public NetworkInstanceId owner_id;
+
     public float damage;
     public float stun_duration;
     public float damage_occur;
@@ -35,7 +39,7 @@ public class RockjawCrunchLogic : ClientCalculatedLogic
 
     private IEnumerator WaitForDamage()
     {
-        Player source = client_calculated.owner.player;
+        Player source = ClientScene.FindLocalObject(owner_id).GetComponent<Character>().player;
         while (damage_occur > 0)
         {
             damage_occur -= Time.deltaTime;

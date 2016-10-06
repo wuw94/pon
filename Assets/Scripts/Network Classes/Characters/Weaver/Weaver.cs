@@ -17,7 +17,8 @@ public class Weaver : Character
     // Skill 1 (Piercing Thread) LShift
     private const float _skill1_cooldown = 12.0f;
 
-    public WeaverPiercingThread weaver_piercing_thread;
+    public WeaverPiercingThreadLogic weaver_piercing_thread_logic;
+    public WeaverPiercingThreadView weaver_piercing_thread_view;
 
     // Skill 2 (Tumble) Space
     private const float _skill2_cooldown = 8.0f;
@@ -62,7 +63,9 @@ public class Weaver : Character
     public override void Skill1()
     {
         GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-        weaver_piercing_thread.ShowLocal(attacking_offset.position, this.transform.rotation);
+        WeaverPiercingThreadView wptv = Instantiate(weaver_piercing_thread_view);
+        wptv.transform.position = this.attacking_offset.position;
+        wptv.transform.rotation = this.transform.rotation;
         CmdMakePiercingThread();
         StartCoroutine(PiercingThread());
     }
@@ -70,9 +73,24 @@ public class Weaver : Character
     [Command]
     private void CmdMakePiercingThread()
     {
-        WeaverPiercingThread wpt = Instantiate<WeaverPiercingThread>(weaver_piercing_thread);
-        NetworkServer.SpawnWithClientAuthority(wpt.gameObject, this.player.connectionToClient);
-        wpt.Make(attacking_offset.position, this.transform.rotation, this.GetTeam(), this.player.connectionToClient);
+        WeaverPiercingThreadLogic wptl = Instantiate<WeaverPiercingThreadLogic>(weaver_piercing_thread_logic);
+        wptl.transform.position = this.attacking_offset.position;
+        wptl.transform.rotation = this.transform.rotation;
+        wptl.owner_id = netId;
+        wptl.PreSpawnChangeTeam(GetTeam());
+        NetworkServer.Spawn(wptl.gameObject);
+        RpcMakeWeaverPiercingThread();
+    }
+
+    [ClientRpc]
+    private void RpcMakeWeaverPiercingThread()
+    {
+        if (player == Player.mine)
+            return;
+        WeaverPiercingThreadView wptv = Instantiate(weaver_piercing_thread_view);
+        wptv.GetComponent<SpriteRenderer>().color = this.GetComponent<SpriteRenderer>().color;
+        wptv.transform.position = this.attacking_offset.position;
+        wptv.transform.rotation = this.transform.rotation;
     }
     
     private IEnumerator PiercingThread()

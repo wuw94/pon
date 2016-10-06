@@ -2,8 +2,11 @@
 using UnityEngine.Networking;
 using System.Collections;
 
-public class WeaverPiercingThreadLogic : ClientCalculatedLogic
+public class WeaverPiercingThreadLogic : CharacterInteractor
 {
+    [SyncVar]
+    public NetworkInstanceId owner_id;
+
     public int damage;
     
     public override void OnStartServer()
@@ -14,9 +17,9 @@ public class WeaverPiercingThreadLogic : ClientCalculatedLogic
     
     private IEnumerator Timeout()
     {
-        yield return new WaitForSeconds(timeout);
+        yield return new WaitForSeconds(0.5f);
         foreach (Character enemy in enemies_held)
-            enemy.ChangeHealth(client_calculated.owner.player, -damage);
+            enemy.ChangeHealth(ClientScene.FindLocalObject(owner_id).GetComponent<Character>().player, -damage);
         Destroy(this.gameObject);
     }
 }

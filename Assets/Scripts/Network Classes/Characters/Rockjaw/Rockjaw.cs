@@ -15,7 +15,8 @@ public class Rockjaw : Character
     private const float _primary_cooldown = 0.9f;
 
     // Skill 1 (Impale)
-    public RockjawCrunch rockjaw_crunch;
+    public RockjawCrunchView rockjaw_crunch_view;
+    public RockjawCrunchLogic rockjaw_crunch_logic;
     private const float _skill1_cooldown = 2.0f;
 
     // Skill 2 (Blitz)
@@ -28,7 +29,7 @@ public class Rockjaw : Character
         ability_primary.SetCooldown(_primary_cooldown);
         ability_reload.SetCooldown(0);
         ability_skill1.SetCooldown(_skill1_cooldown);
-        ability_skill1.name = "Impale";
+        ability_skill1.name = "Crunch";
         ability_skill2.SetCooldown(_skill2_cooldown);
         ability_skill2.name = "Blitz";
     }
@@ -56,10 +57,17 @@ public class Rockjaw : Character
     }
 
     // ------------------------------------------------- Impale -------------------------------------------------
+    // To execute an ability we
+    // create local
+    // command to create logic
+    // rpc to create image for others
+    // to send a command we need authority. authority is only gained through spawn
     public override void Skill1()
     {
         GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-        rockjaw_crunch.ShowLocal(this.transform.position + transform.rotation * (Vector2.up * 0.5f), Quaternion.identity);
+        RockjawCrunchView rcv = Instantiate(rockjaw_crunch_view);
+        rcv.transform.position = this.attacking_offset.position + transform.rotation * (Vector2.up * 0.5f);
+        rcv.transform.rotation = Quaternion.identity;
         CmdMakeRockjawCrunch();
         StartCoroutine(RockjawCrunch());
     }
@@ -67,9 +75,23 @@ public class Rockjaw : Character
     [Command]
     private void CmdMakeRockjawCrunch()
     {
-        RockjawCrunch rc = Instantiate<RockjawCrunch>(rockjaw_crunch);
-        NetworkServer.SpawnWithClientAuthority(rc.gameObject, this.player.connectionToClient);
-        rc.Make(this.transform.position + transform.rotation * (Vector2.up * 0.5f), Quaternion.identity, this.GetTeam(), this.player.connectionToClient);
+        RockjawCrunchLogic l = Instantiate<RockjawCrunchLogic>(rockjaw_crunch_logic);
+        l.transform.position = this.attacking_offset.position + transform.rotation * (Vector2.up * 0.5f);
+        l.owner_id = netId;
+        l.PreSpawnChangeTeam(GetTeam());
+        NetworkServer.Spawn(l.gameObject);
+        RpcMakeRockjawCrunch();
+    }
+
+    [ClientRpc]
+    private void RpcMakeRockjawCrunch()
+    {
+        if (player == Player.mine)
+            return;
+        RockjawCrunchView rcv = Instantiate(rockjaw_crunch_view);
+        rcv.GetComponent<SpriteRenderer>().color = this.GetComponent<SpriteRenderer>().color;
+        rcv.transform.position = this.attacking_offset.position + transform.rotation * (Vector2.up * 0.5f);
+        rcv.transform.rotation = Quaternion.identity;
     }
 
     private IEnumerator RockjawCrunch()
