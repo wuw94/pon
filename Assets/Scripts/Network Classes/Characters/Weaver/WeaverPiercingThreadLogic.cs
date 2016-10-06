@@ -17,7 +17,7 @@ public class WeaverPiercingThreadLogic : CharacterInteractor
     
     private IEnumerator Timeout()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.4f);
         foreach (Character enemy in enemies_held)
             enemy.ChangeHealth(ClientScene.FindLocalObject(owner_id).GetComponent<Character>().player, -damage);
         Destroy(this.gameObject);

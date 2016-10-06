@@ -18,6 +18,7 @@ public enum MenuPage
 
 public sealed class Menu : MonoBehaviour
 {
+    public Texture2D cursor_image;
     public GUISkin MenuSkin;
     public Texture2D MenuOverlay;
     public static MenuPage current = MenuPage.PG_Home;
@@ -72,13 +73,13 @@ public sealed class Menu : MonoBehaviour
                     GUI_IG_ConfigureGame();
                 else if (current == MenuPage.IG_LoadingMap)
                     GUI_IG_LoadingMap();
-                else if (current == MenuPage.IG_Gameplay)
-                    GUI_IG_Gameplay();
                 else if (current == MenuPage.IG_MenuHome)
                     GUI_IG_MenuHome();
                 else if (current == MenuPage.IG_SwitchCharacter)
                     GUI_IG_SwitchCharacter();
             }
+            else
+                GUI_IG_Gameplay();
         }
 
         GUIDebug();
@@ -99,6 +100,7 @@ public sealed class Menu : MonoBehaviour
     // ------------------------------------------------- GUIHome -------------------------------------------------
     private void GUI_PG_Home()
     {
+        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         GUI.skin = MenuSkin;
         GUI.BeginGroup(new Rect(Screen.width / 2 - 300, Screen.height / 2 - 200, PG_GROUP_WIDTH, PG_GROUP_HEIGHT));
         GUI.Box(new Rect(0, 0, PG_GROUP_WIDTH, PG_GROUP_HEIGHT), "");
@@ -136,6 +138,7 @@ public sealed class Menu : MonoBehaviour
     // ------------------------------------------------- GUIListing -------------------------------------------------
     private void GUI_PG_Listing()
     {
+        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         GUI.skin = MenuSkin;
         GUI.BeginGroup(new Rect(Screen.width / 2 - 300, Screen.height / 2 - 200, PG_GROUP_WIDTH, PG_GROUP_HEIGHT));
         GUI.Box(new Rect(0, 0, PG_GROUP_WIDTH, PG_GROUP_HEIGHT), "");
@@ -169,6 +172,7 @@ public sealed class Menu : MonoBehaviour
     // ------------------------------------------------- GUIConfigureGame -------------------------------------------------
     private void GUI_IG_ConfigureGame()
     {
+        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         GUI.skin = MenuSkin;
         GUI.BeginGroup(new Rect(Screen.width / 2 - 300, Screen.height / 2 - 200, PG_GROUP_WIDTH, PG_GROUP_HEIGHT));
         GUI.Box(new Rect(0, 0, PG_GROUP_WIDTH, PG_GROUP_HEIGHT), "");
@@ -240,6 +244,7 @@ public sealed class Menu : MonoBehaviour
     // ------------------------------------------------- GUILoading -------------------------------------------------
     private void GUI_IG_LoadingMap()
     {
+        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         GUI.skin = MenuSkin;
         GUI.BeginGroup(new Rect(Screen.width / 2 - 300, Screen.height / 2 - 200, PG_GROUP_WIDTH, PG_GROUP_HEIGHT));
         GUI.Box(new Rect(0, 0, PG_GROUP_WIDTH, PG_GROUP_HEIGHT), "");
@@ -249,15 +254,16 @@ public sealed class Menu : MonoBehaviour
         GUI.EndGroup();
     }
 
-    
 
+    // ------------------------------------------------- GUIIGGameplay -------------------------------------------------
     private void GUI_IG_Gameplay()
     {
-
+        Cursor.SetCursor(cursor_image, new Vector2(cursor_image.width / 2, cursor_image.height / 2), CursorMode.ForceSoftware);
     }
 
     private void GUI_IG_MenuHome()
     {
+        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), MenuOverlay);
         GUI.skin = MenuSkin;
         
@@ -296,7 +302,7 @@ public sealed class Menu : MonoBehaviour
 
     private void GUI_IG_SwitchCharacter()
     {
-
+        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), MenuOverlay);
         GUI.skin = MenuSkin;
 
