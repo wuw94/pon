@@ -5,9 +5,6 @@ using System.Collections.Generic;
 
 public class SpawnRoom : NetworkTeam
 {
-    List<Character> allies = new List<Character>();
-    List<Character> enemies = new List<Character>();
-
     public override void OnStartServer()
     {
         base.OnStartServer();
@@ -20,13 +17,9 @@ public class SpawnRoom : NetworkTeam
         if (col.GetComponent<Character>() != null)
         {
             if (col.GetComponent<Character>().GetTeam() == this.GetTeam())
-            {
                 col.GetComponent<Character>().ChangeHealth(null, 200 * Time.deltaTime);
-            }
             else
-            {
                 col.GetComponent<Character>().ChangeHealth(null, -200 * Time.deltaTime);
-            }
         }
     }
 

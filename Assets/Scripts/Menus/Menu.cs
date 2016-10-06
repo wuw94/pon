@@ -205,7 +205,7 @@ public sealed class Menu : MonoBehaviour
         // Attacking Players
         for (int i = 0; i < attacking_players.Count; i++)
         {
-            GUI.Label(new Rect(0, 80 + 30 * i, PG_GROUP_WIDTH / 3, 30), attacking_players[i].player_name);
+			GUI.Label(new Rect(0, 80 + 30 * i, PG_GROUP_WIDTH / 3, 30), attacking_players[i].name);
         }
         if (Player.mine.selected_team != Team.A)
             if (GUI.Button(new Rect(20, 80 + 30 * attacking_players.Count, PG_GROUP_WIDTH / 3 - 40, 30), "Join Team"))
@@ -214,14 +214,14 @@ public sealed class Menu : MonoBehaviour
         // Defending Players
         for (int i = 0; i < defending_players.Count; i++)
         {
-            GUI.Label(new Rect(PG_GROUP_WIDTH * 2 / 3, 80 + 30 * i, PG_GROUP_WIDTH / 3, 30), defending_players[i].player_name);
+			GUI.Label(new Rect(PG_GROUP_WIDTH * 2 / 3, 80 + 30 * i, PG_GROUP_WIDTH / 3, 30), defending_players[i].name);
         }
         if (Player.mine.selected_team != Team.B)
             if (GUI.Button(new Rect(PG_GROUP_WIDTH * 2 / 3 + 20, 80 + 30 * defending_players.Count, PG_GROUP_WIDTH / 3 - 40, 30), "Join Team"))
                 Player.mine.CmdChangeSelectedTeam(Team.B);
 
         for (int i = 0; i < neutral_players.Count; i++)
-            GUI.Label(new Rect(PG_GROUP_WIDTH * 1 / 3, 80 + 30 * i, PG_GROUP_WIDTH / 3, 30), neutral_players[i].player_name);
+			GUI.Label(new Rect(PG_GROUP_WIDTH * 1 / 3, 80 + 30 * i, PG_GROUP_WIDTH / 3, 30), neutral_players[i].name);
 
 
 
@@ -271,7 +271,7 @@ public sealed class Menu : MonoBehaviour
             Back();
         }
 
-        if (GUI.Button(new Rect(15, 80, IG_GROUP_WIDTH - 30, 30), "Switch Character"))
+		if (GUI.Button(new Rect(15, 80, IG_GROUP_WIDTH - 30, 30), "Switch Character") && Player.mine.can_choose_character)
         {
             current = MenuPage.IG_SwitchCharacter;
         }

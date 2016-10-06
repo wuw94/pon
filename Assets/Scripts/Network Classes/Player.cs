@@ -17,26 +17,29 @@ public class Player : NetworkBehaviour
     [SyncVar]
     public bool is_host;
 
-    public Character character;
+	[SyncVar(hook = "OnUpdateCharId")]
+	private NetworkInstanceId character_id;
 
+	/// <summary>
+	/// The character object being controlled by this player.
+	/// </summary>
+    public Character character;
+	
     [SyncVar]
     public Team selected_team = Team.Neutral;
 
-    [SyncVar]
-    public int selected_character = 0;
 
-    [SyncVar]
-    public string player_name;
+	[SyncVar(hook = "OnUpdatePlayerName")]
+	private string _player_name;
 
     [SyncVar]
     public bool done_generating_map = false;
 
+	[SyncVar]
+	public int selected_character = 0;
 
     [SerializeField]
     public GameObject[] possible_characters;
-
-    [SyncVar(hook = "OnUpdateCharId")]
-    private NetworkInstanceId character_id;
 
     [SyncVar]
     public bool can_choose_character = true;
@@ -54,9 +57,10 @@ public class Player : NetworkBehaviour
         
     }
 
-    // Not to be used, but maybe in the future?
+	// Switch your character to the one in the new index
     public void SwitchCharacter(int change_to)
     {
+		can_choose_character = false;
         CmdDestroyCharacter(character_id);
         CmdMakeCharacter(change_to);
     }
@@ -145,6 +149,12 @@ public class Player : NetworkBehaviour
     [Command]
     public void CmdSetName(string player_name)
     {
-        this.player_name = player_name;
+        this._player_name = player_name;
     }
+
+	private void OnUpdatePlayerName(string new_name)
+	{
+		this._player_name = new_name;
+		this.name = new_name;
+	}
 }

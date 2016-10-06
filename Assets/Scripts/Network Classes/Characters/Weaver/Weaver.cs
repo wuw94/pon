@@ -23,6 +23,8 @@ public class Weaver : Character
     private const float _skill2_cooldown = 8.0f;
     private bool _skill2_can_echo = false;
 
+	public DashingTrail weaver_tumble_trail;
+
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -114,6 +116,11 @@ public class Weaver : Character
 
     private IEnumerator Tumble()
     {
+		// show trail
+		DashingTrail dt = Instantiate(weaver_tumble_trail);
+		dt.owner = this;
+		CmdDashTrail();
+
         for (int i = 0; i < 5; i++)
         {
 
@@ -145,6 +152,10 @@ public class Weaver : Character
 
     private IEnumerator TumbleEcho()
     {
+		DashingTrail dt = Instantiate(weaver_tumble_trail);
+		dt.owner = this;
+		CmdDashTrail();
+
         _skill2_can_echo = false;
         for (int i = 0; i < 5; i++)
         {
@@ -165,6 +176,21 @@ public class Weaver : Character
         GetComponent<Rigidbody2D>().velocity = Vector2.zero;
         ability_skill2.Use();
     }
+
+	[Command]
+	private void CmdDashTrail()
+	{
+		RpcDashTrail();
+	}
+
+	[ClientRpc]
+	private void RpcDashTrail()
+	{
+		if (player == Player.mine)
+			return;
+		DashingTrail dt = Instantiate(weaver_tumble_trail);
+		dt.owner = this;
+	}
 
 
     // ------------------------------------------------- GUI -------------------------------------------------

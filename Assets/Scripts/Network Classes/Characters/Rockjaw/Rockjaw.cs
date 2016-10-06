@@ -14,12 +14,13 @@ public class Rockjaw : Character
     private Shotgun primary;
     private const float _primary_cooldown = 0.9f;
 
-    // Skill 1 (Crunch)
+    // Skill 1 (Impale)
     public RockjawCrunch rockjaw_crunch;
     private const float _skill1_cooldown = 2.0f;
 
-    // Skill 2 (Dash)
+    // Skill 2 (Blitz)
     private const float _skill2_cooldown = 6.0f;
+	public DashingTrail rockjaw_blitz;
 
     public override void OnStartClient()
     {
@@ -27,9 +28,9 @@ public class Rockjaw : Character
         ability_primary.SetCooldown(_primary_cooldown);
         ability_reload.SetCooldown(0);
         ability_skill1.SetCooldown(_skill1_cooldown);
-        ability_skill1.name = "Crunch";
+        ability_skill1.name = "Impale";
         ability_skill2.SetCooldown(_skill2_cooldown);
-        ability_skill2.name = "Dash";
+        ability_skill2.name = "Blitz";
     }
 
     public override void Passive()
@@ -54,7 +55,7 @@ public class Rockjaw : Character
         StartCoroutine(primary.Reload());
     }
 
-    // ------------------------------------------------- Crunch -------------------------------------------------
+    // ------------------------------------------------- Impale -------------------------------------------------
     public override void Skill1()
     {
         GetComponent<Rigidbody2D>().velocity = Vector2.zero;
@@ -78,7 +79,7 @@ public class Rockjaw : Character
     }
 
 
-    // ------------------------------------------------- Dash -------------------------------------------------
+    // ------------------------------------------------- Blitz -------------------------------------------------
     public override void Skill2()
     {
         if (SA_rooted)
@@ -109,6 +110,10 @@ public class Rockjaw : Character
 
     private IEnumerator Dash()
     {
+		DashingTrail dt = Instantiate(rockjaw_blitz);
+		dt.owner = this;
+		CmdDashTrail();
+
         for (int i = 0; i < 5; i++)
         {
 
@@ -128,6 +133,21 @@ public class Rockjaw : Character
         }
         GetComponent<Rigidbody2D>().velocity = Vector2.zero;
     }
+
+	[Command]
+	private void CmdDashTrail()
+	{
+		RpcDashTrail();
+	}
+
+	[ClientRpc]
+	private void RpcDashTrail()
+	{
+		if (player == Player.mine)
+			return;
+		DashingTrail dt = Instantiate(rockjaw_blitz);
+		dt.owner = this;
+	}
 
 
     // ------------------------------------------------- GUI -------------------------------------------------

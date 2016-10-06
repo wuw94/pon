@@ -395,23 +395,6 @@ public class BuildingModule : Module
                                                     (b.Top(Depth.World) + b.Bottom(Depth.World)) / 2.0f + MapGenerator.DRAW_PAD,
                                                     go.transform.position.z);
             NetworkServer.Spawn(go);
-
-            
-            foreach (Room r in b.rooms)
-            {
-                /*
-                go = Instantiate<GameObject>(room_light);
-                go.transform.position = new Vector3((r.Left(Depth.World) + r.Right(Depth.World)) / 2.0f + MapGenerator.DRAW_PAD,
-                                                    (r.Top(Depth.World) + r.Bottom(Depth.World)) / 2.0f + MapGenerator.DRAW_PAD,
-                                                    go.transform.position.z);
-                Color c = light_colors[UnityEngine.Random.Range(0, light_colors.Length)];
-                go.GetComponent<Light>().color = c;
-                go.GetComponent<Light>().range = -30.0f + (r.width + r.height) * 10.0f;
-                go.GetComponent<Light>().spotAngle = 40 + 9.0f * (r.width + r.height);
-                NetworkServer.Spawn(go);
-                */
-            }
-            
         }
     }
 

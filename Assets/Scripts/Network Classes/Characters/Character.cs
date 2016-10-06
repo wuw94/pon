@@ -27,8 +27,6 @@ public abstract class Character : NetworkEntity
 
     private DynamicLight look_for_characters;
 
-    public TrailRenderer trail;
-
     public Transform attacking_offset;
 
     public abstract float max_speed { get; set; }
@@ -117,8 +115,8 @@ public abstract class Character : NetworkEntity
         ability_reload = new Ability(KeyCode.R, true);
         ability_skill1 = new Ability(KeyCode.LeftShift, false);
         ability_skill2 = new Ability(KeyCode.Space, false);
-        trail.sortingLayerName = "Player";
-        trail.sortingOrder = -1;
+        //trail.sortingLayerName = "Player";
+        //trail.sortingOrder = -1;
     }
 
     public override void OnStartAuthority()
@@ -417,7 +415,7 @@ public abstract class Character : NetworkEntity
 
     public override void Dead(Player source)
     {
-        Debug.LogError(player.player_name + " killed by " + source.player_name);
+		Debug.LogError(player.name + " killed by " + source.name);
         StartCoroutine(RespawnProcess());
     }
 
@@ -468,7 +466,7 @@ public abstract class Character : NetworkEntity
         if (player != null)
         {
             Vector2 point = Camera.main.WorldToScreenPoint(this.transform.position);
-            GUI.Label(new Rect(point.x - 150, Screen.height - point.y - 55, 300, 100), player.player_name, style);
+			GUI.Label(new Rect(point.x - 150, Screen.height - point.y - 55, 300, 100), player.name, style);
 
             string s = "";
             for (int i = 0; i < GetHealthLerp() / max_health * 20; i++)
