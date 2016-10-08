@@ -382,7 +382,7 @@ public sealed class Menu : MonoBehaviour
     // ------------------------------------------------- GUIDebug -------------------------------------------------
     private void GUIDebug()
     {
-        if (!Input.GetKey(KeyCode.RightControl))
+		if (!Input.GetKey(KeyCode.RightControl) && !Input.GetKey(KeyCode.RightCommand))
             return;
         if (SceneManager.GetActiveScene().name == NetworkManager.singleton.offlineScene)
         {
