@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
+using System.Collections.Generic;
 
 /// <summary>
 /// Class for managing a character. Characters are objects that represent a player.
@@ -23,13 +24,16 @@ public abstract class Character : NetworkEntity
     private Camera following_camera;
     private Camera overview_camera;
 
-    private DynamicLight vision;
+    protected DynamicLight vision;
 
-    private DynamicLight look_for_characters;
+    protected DynamicLight look_for_characters;
 
     public Transform attacking_offset;
 
     public abstract float max_speed { get; set; }
+    public MultiplicativeMultipliersList movespeed_multipliers = new MultiplicativeMultipliersList();
+    
+
     protected Ability ability_primary;
     protected Ability ability_reload;
 
@@ -133,6 +137,7 @@ public abstract class Character : NetworkEntity
     public override void Update()
     {
         base.Update();
+        movespeed_multipliers.Update();
         if (isServer)
         {
             ManageStatusAilments();
@@ -282,14 +287,16 @@ public abstract class Character : NetworkEntity
     {
         if (SA_stunned || SA_rooted)
             return;
+        Vector2 dir = Vector2.zero;
         if (Input.GetKey(KeyCode.W))
-            Move(Vector2.up);
+            dir += Vector2.up;
         if (Input.GetKey(KeyCode.S))
-            Move(Vector2.down);
+            dir += Vector2.down;
         if (Input.GetKey(KeyCode.A))
-            Move(Vector2.left);
+            dir += Vector2.left;
         if (Input.GetKey(KeyCode.D))
-            Move(Vector2.right);
+            dir += Vector2.right;
+        Move(dir);
     }
 
     private void CheckSkillInputs()
@@ -321,9 +328,9 @@ public abstract class Character : NetworkEntity
     {
         Vector2 v = GetComponent<Rigidbody2D>().velocity;
 
-        v += dir * max_speed / 2;
+        v += dir * int.MaxValue;
 
-        v = Vector2.ClampMagnitude(v, max_speed);
+        v = Vector2.ClampMagnitude(v, max_speed * movespeed_multipliers.Total());
         GetComponent<Rigidbody2D>().velocity = v;
     }
 
@@ -378,6 +385,45 @@ public abstract class Character : NetworkEntity
     }
 
     /// <summary>
+    /// Get the closest character to yourself.
+    /// </summary>
+    /// <returns></returns>
+    protected Character GetClosestCharacter()
+    {
+        Character to_return = null;
+        foreach (Character c in FindObjectsOfType<Character>())
+            if (c != this && c.is_visible && (to_return == null || Vector2.Distance(this.transform.position, c.transform.position) < Vector2.Distance(this.transform.position, to_return.transform.position)))
+                to_return = c;
+        return to_return;
+    }
+
+    /// <summary>
+    /// Get the closest ally to yourself.
+    /// </summary>
+    /// <returns></returns>
+    protected Character GetClosestAlly()
+    {
+        Character to_return = null;
+        foreach (Character c in FindObjectsOfType<Character>())
+            if (c != this && c.GetTeam() == this.GetTeam() && c.is_visible && (to_return == null || Vector2.Distance(this.transform.position, c.transform.position) < Vector2.Distance(this.transform.position, to_return.transform.position)))
+                to_return = c;
+        return to_return;
+    }
+
+    /// <summary>
+    /// Get the closest enemy to yourself.
+    /// </summary>
+    /// <returns></returns>
+    protected Character GetClosestEnemy()
+    {
+        Character to_return = null;
+        foreach (Character c in FindObjectsOfType<Character>())
+            if (c != this && c.GetTeam() != this.GetTeam() && c.is_visible && (to_return == null || Vector2.Distance(this.transform.position, c.transform.position) < Vector2.Distance(this.transform.position, to_return.transform.position)))
+                to_return = c;
+        return to_return;
+    }
+
+    /// <summary>
     /// Get the closest character to the mouse, besides yourself.
     /// </summary>
     /// <returns></returns>
@@ -391,6 +437,10 @@ public abstract class Character : NetworkEntity
         return to_return;
     }
 
+    /// <summary>
+    /// Get the closest ally to the mouse, besides yourself.
+    /// </summary>
+    /// <returns></returns>
     protected Character GetClosestAllyToMouse()
     {
         Character to_return = null;
@@ -403,6 +453,10 @@ public abstract class Character : NetworkEntity
         return to_return;
     }
 
+    /// <summary>
+    /// Get the closest enemy to the mouse, besides yourself.
+    /// </summary>
+    /// <returns></returns>
     protected Character GetClosestEnemyToMouse()
     {
         Character to_return = null;
@@ -411,6 +465,35 @@ public abstract class Character : NetworkEntity
             if (c != this && c.GetTeam() != this.GetTeam() && c.is_visible && (to_return == null || Vector2.Distance(mouse, c.transform.position) < Vector2.Distance(mouse, to_return.transform.position)))
                 to_return = c;
         return to_return;
+    }
+
+    /// <summary>
+    /// Add a movespeed multiplier for yourself. This is computed locally.
+    /// </summary>
+    /// <param name="amount"></param>
+    /// <param name="duration"></param>
+    public void LocalAddMovespeedMultiplier(float amount, float duration, string source, NetworkInstanceId receiver)
+    {
+        movespeed_multipliers.Add(amount, duration, source, this.netId);
+    }
+
+    /// <summary>
+    /// Add a movespeed multiplier for somebody else. This is sent to the server and then to the character.
+    /// </summary>
+    /// <param name="amount"></param>
+    /// <param name="duration"></param>
+    [Command]
+    public void CmdAddMovespeedMultiplier(float amount, float duration, string source, NetworkInstanceId receiver)
+    {
+        RpcAddMovespeedMultiplier(amount, duration, source, receiver);
+    }
+
+    [ClientRpc]
+    private void RpcAddMovespeedMultiplier(float amount, float duration, string source, NetworkInstanceId receiver)
+    {
+        GameObject g = ClientScene.FindLocalObject(receiver);
+        if (g != null)
+            g.GetComponent<Character>().movespeed_multipliers.Add(amount, duration, source, this.netId);
     }
 
     public override void Dead(Player source)
@@ -434,9 +517,17 @@ public abstract class Character : NetworkEntity
         d.GetComponent<NetworkTeam>().PreSpawnChangeTeam(this.GetTeam());
         NetworkServer.Spawn(d);
         Destroy(d, 5);
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(4);
         RpcPortToSpawn(GetTeam());
+        yield return new WaitForSeconds(1);
         Reload();
+        if (hasAuthority)
+        {
+            if (Camera.main != null && Camera.main.GetComponent<LerpFollow>() != null)
+                Camera.main.GetComponent<LerpFollow>().target = this.transform;
+            vision.transform.parent = this.transform;
+            look_for_characters.transform.parent = this.transform;
+        }
         Revive();
     }
 
@@ -586,5 +677,12 @@ public abstract class Character : NetworkEntity
     {
         StopAllCoroutines();
         look_for_characters.InsideFieldOfViewEvent -= LookForThis;
+        if (hasAuthority)
+        {
+            if (vision != null)
+                Destroy(vision.gameObject);
+            if (look_for_characters != null)
+                Destroy(look_for_characters.gameObject);
+        }
     }
 }

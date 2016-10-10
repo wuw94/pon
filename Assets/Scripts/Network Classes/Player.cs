@@ -65,7 +65,7 @@ public class Player : NetworkBehaviour
 	// Switch your character to the one in the new index
     public void SwitchCharacter(int change_to)
     {
-		can_choose_character = false;
+		//can_choose_character = false;
         CmdDestroyCharacter(character_id);
         CmdMakeCharacter(change_to);
     }

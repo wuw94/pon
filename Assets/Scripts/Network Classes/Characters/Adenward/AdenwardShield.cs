@@ -5,7 +5,7 @@ using System.Collections;
 
 public class AdenwardShield : NetworkEntity
 {
-    public override float max_health { get { return 500; } set { throw new NotImplementedException(); } }
+    public override float max_health { get { return 1000; } set { throw new NotImplementedException(); } }
     public Adenward owner;
     private const int WAIT_TIME_BEFORE_REGEN = 5;
 

@@ -5,8 +5,8 @@ using System.Collections.Generic;
 
 public class Nucleus : NetworkTeam
 {
-    private List<Character> _dismantling = new List<Character>();
-    private List<Character> _repairing = new List<Character>();
+    public List<Character> _dismantling = new List<Character>();
+    public List<Character> _repairing = new List<Character>();
 
     public const int max_health = 100;
 
@@ -92,10 +92,12 @@ public class Nucleus : NetworkTeam
         {
             if (col.GetComponent<Character>().GetTeam() == this.GetTeam())
             {
-                _repairing.Add(col.GetComponent<Character>());
+                if (!_repairing.Contains(col.GetComponent<Character>()))
+                    _repairing.Add(col.GetComponent<Character>());
             }
             else
             {
+                if (!_dismantling.Contains(col.GetComponent<Character>()))
                 _dismantling.Add(col.GetComponent<Character>());
             }
         }
@@ -164,10 +166,10 @@ public class Nucleus : NetworkTeam
     {
         if (!isServer)
             return;
-        if (_repairing.Count == 0)
-            ChangeHealth(-_dismantling.Count * 10 * Time.deltaTime);
-        if (_dismantling.Count == 0)
-            ChangeHealth(_repairing.Count * 10 * Time.deltaTime);
+        if (_repairing.Count == 0 && _dismantling.Count > 0)
+            ChangeHealth(-5 * Time.deltaTime);
+        if (_dismantling.Count == 0 && _repairing.Count > 0)
+            ChangeHealth(5 * Time.deltaTime);
     }
 
     protected override void OnDisplayMine()

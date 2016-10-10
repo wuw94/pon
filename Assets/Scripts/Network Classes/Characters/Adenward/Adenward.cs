@@ -36,9 +36,10 @@ public class Adenward : Character
     private const float _skill1_cooldown = 0.7f;
 
     // Skill 2 (Safeguard) Space
-    private const float _skill2_cooldown = 1.0f;
-
-    public GameObject adenward_dash_to_image;
+    private const float _skill2_cooldown = 7.0f;
+    private const float SAFEGUARD_RANGE_MAX = 4.0f;
+    private const float SAFEGUARD_RANGE_MIN = 1.5f;
+    private GameObject adenward_dash_to_image;
 
     public override void OnStartServer()
     {
@@ -64,26 +65,27 @@ public class Adenward : Character
     public override void OnStartAuthority()
     {
         base.OnStartAuthority();
-        adenward_dash_to_image = Instantiate<GameObject>(adenward_dash_to_image);
+        adenward_dash_to_image = Instantiate(Resources.Load<GameObject>("Characters/Adenward/AdenwardDashTo"));
     }
 
     public override void Update()
     {
         base.Update();
-        ManageDashToImage();
+        if (hasAuthority)
+            ManageDashToImage();
     }
 
     private void ManageDashToImage()
     {
         Character c = GetClosestAllyToMouse();
-        if (c == null)
-            adenward_dash_to_image.GetComponent<SpriteRenderer>().color = new Color(0.304f, 0.404f, 1, 0);
-        else
+        if (c != null && Vector2.Distance(c.transform.position, this.transform.position) < SAFEGUARD_RANGE_MAX && Vector2.Distance(c.transform.position, this.transform.position) > SAFEGUARD_RANGE_MIN)
         {
             adenward_dash_to_image.transform.position = c.transform.position;
             adenward_dash_to_image.transform.rotation = Face(adenward_dash_to_image.transform.position, transform.position);
-            adenward_dash_to_image.GetComponent<SpriteRenderer>().color = new Color(0.5f, 0.6f, 1, 0.5f);
+            adenward_dash_to_image.GetComponent<SpriteRenderer>().color = new Color(0.5f, 0.6f, 1, Mathf.Lerp(adenward_dash_to_image.GetComponent<SpriteRenderer>().color.a, 0.5f, 20 * Time.deltaTime));
         }
+        else
+            adenward_dash_to_image.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, Mathf.Lerp(adenward_dash_to_image.GetComponent<SpriteRenderer>().color.a, 0, 20 * Time.deltaTime));
     }
 
     public IEnumerator LookForShield()
@@ -203,7 +205,7 @@ public class Adenward : Character
             return;
         }
         Character c = GetClosestAllyToMouse();
-        if (c != null && Vector2.Distance(c.transform.position, this.transform.position) < 6)
+        if (c != null && Vector2.Distance(c.transform.position, this.transform.position) < SAFEGUARD_RANGE_MAX)
         {
             Vector2 dash_to = c.transform.position;
             StartCoroutine(Safeguard(dash_to));
@@ -238,14 +240,18 @@ public class Adenward : Character
             return;
         GUI.Label(new Rect(Screen.width / 2 - 50, Screen.height - 80, 300, 100), "Your Health: " + (int)GetHealth() + " / " + (int)max_health);
         GUI.Label(new Rect(30, Screen.height - 100, 300, 100), "Shield Health: " + (int)shield.GetHealth() + " / " + (int)shield.max_health);
-        GUI.Label(new Rect(30, Screen.height - 80, 300, 100), ability_skill1.ToString());
+        if (stronghold_mode)
+            GUI.Label(new Rect(30, Screen.height - 80, 300, 100), "Stronghold: [ON]");
+        else
+            GUI.Label(new Rect(30, Screen.height - 80, 300, 100), "Stronghold: [OFF]");
         GUI.Label(new Rect(30, Screen.height - 60, 300, 100), ability_skill2.ToString());
     }
 
 
     public override void OnDestroy()
     {
-        Destroy(adenward_dash_to_image.gameObject);
         base.OnDestroy();
+        if (adenward_dash_to_image != null)
+            Destroy(adenward_dash_to_image.gameObject);
     }
 }

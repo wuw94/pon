@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class ExpirationStack<T>
+public class ExpirationQueue<T>
 {
-    public struct StackContent
+    public struct ExpirationQueueElement
     {
         public T element;
         public float timestamp;
-        public StackContent(T element, float timestamp)
+        public ExpirationQueueElement(T element, float timestamp)
         {
             this.element = element;
             this.timestamp = timestamp;
@@ -16,19 +16,19 @@ public class ExpirationStack<T>
 
     private float _expiration_time;
 
-    private Queue<StackContent> _contents = new Queue<StackContent>();
+    private Queue<ExpirationQueueElement> _contents = new Queue<ExpirationQueueElement>();
 
-    public ExpirationStack(float expiration_time)
+    public ExpirationQueue(float expiration_time)
     {
         this._expiration_time = expiration_time;
     }
 
     public void Add(T element)
     {
-        _contents.Enqueue(new StackContent(element, Time.time));
+        _contents.Enqueue(new ExpirationQueueElement(element, Time.time));
     }
 
-    public Queue<StackContent> GetContents()
+    public Queue<ExpirationQueueElement> GetContents()
     {
         return _contents;
     }
