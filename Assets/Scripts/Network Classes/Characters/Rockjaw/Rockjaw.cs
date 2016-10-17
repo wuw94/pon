@@ -17,10 +17,10 @@ public class Rockjaw : Character
     // Skill 1 (Impale)
     public RockjawCrunchView rockjaw_crunch_view;
     public RockjawCrunchLogic rockjaw_crunch_logic;
-    private const float _skill1_cooldown = 2.0f;
+    private const float _skill1_cooldown = 5.0f;
 
     // Skill 2 (Blitz)
-    private const float _skill2_cooldown = 6.0f;
+    private const float _skill2_cooldown = 8.0f;
 	public DashingTrail rockjaw_blitz;
 
     public override void OnStartClient()

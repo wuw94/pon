@@ -32,7 +32,7 @@ public class Squeek : Character
     public float[] latch_beam_particles_width;
 
 	// Skill 1 (Piggyback)
-	private const float _skill1_cooldown = 0.4f;
+	private const float _skill1_cooldown = 0.5f;
     private const string PIGGYBACK_MOVESPEED_SOURCE_NAME = "SQUEEK_PIGGYBACK";
     private const float PIGGYBACK_MOVESPEED_MULTIPLIER = 0.8f;
     private const float PIGGYBACK_MOVESPEED_MULTIPLIER_TICK_DURATION = 0.2f;
@@ -44,13 +44,13 @@ public class Squeek : Character
     public Sprite squeek_mount_on_r;
 
     // Skill 2 (Transience)
-    private const float _skill2_cooldown = 1.0f;
+    private const float _skill2_cooldown = 12.0f;
     private const string TRANSIENCE_MOVESPEED_SOURCE_NAME = "SQUEEK_TRANSIENCE";
     private const float TRANSIENCE_MULTIPLIER_ALLY_MAX = 1.7f;
-    private const float TRANSIENCE_MULTIPLIER_ALLY_MIN = 1.6f;
+    private const float TRANSIENCE_MULTIPLIER_ALLY_MIN = 1.4f;
     private const float TRANSIENCE_MULTIPLIER_ENEMY_MAX = 0.5f;
     private const float TRANSIENCE_MULTIPLIER_ENEMY_MIN = 0.6f;
-    private const float TRANSIENCE_DURATION = 2.0f;
+    private const float TRANSIENCE_DURATION = 3.0f;
     private const float TRANSIENCE_TICK_DURATION = 0.2f;
 
 	public override void OnStartClient()

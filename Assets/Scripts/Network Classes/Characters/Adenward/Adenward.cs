@@ -23,7 +23,7 @@ public class Adenward : Character
     // Primary Weapon
     public AdenwardBashLogic adenward_bash_logic;
     public AdenwardBashView adenward_bash_view;
-    private const float _primary_cooldown = 0.5f;
+    private const float _primary_cooldown = 0.7f;
 
 
 
@@ -33,10 +33,10 @@ public class Adenward : Character
     // Skill 1 (Stronghold) LShift
     [SyncVar]
     public bool stronghold_mode = false;
-    private const float _skill1_cooldown = 0.7f;
+    private const float _skill1_cooldown = 0.5f;
 
     // Skill 2 (Safeguard) Space
-    private const float _skill2_cooldown = 7.0f;
+    private const float _skill2_cooldown = 10.0f;
     private const float SAFEGUARD_RANGE_MAX = 4.0f;
     private const float SAFEGUARD_RANGE_MIN = 1.5f;
     private GameObject adenward_dash_to_image;
