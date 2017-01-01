@@ -19,7 +19,7 @@ public class WeaverPiercingThreadLogic : CharacterInteractor
     {
         yield return new WaitForSeconds(0.4f);
         foreach (Character enemy in enemies_held)
-            enemy.ChangeHealth(ClientScene.FindLocalObject(owner_id).GetComponent<Character>().player, -damage);
+            enemy.ChangeHealth(ClientScene.FindLocalObject(owner_id).GetComponent<Character>(), -damage);
         Destroy(this.gameObject);
     }
 }

@@ -85,7 +85,7 @@ public class Player : NetworkBehaviour
 
     public void BeginSequence()
     {
-        Menu.current = MenuPage.IG_Gameplay;
+        MenuManager.current_menu = typeof(MenuInGameGameplay);
         Destroy(FindObjectOfType<Camera>().gameObject);
         CmdMakeCharacter(selected_character);
     }

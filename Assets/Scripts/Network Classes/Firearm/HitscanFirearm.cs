@@ -93,11 +93,11 @@ public abstract class HitscanFirearm : Firearm
         NetworkEntity ne = ClientScene.FindLocalObject(hit).GetComponent<NetworkEntity>();
         float distance = Vector2.Distance(owner.attacking_offset.position, ne.transform.position);
         if (fall_off_type == FalloffType.Hard)
-            ne.ChangeHealth(owner.player, -damage * (1 - distance / max_distance));
+            ne.ChangeHealth(owner, -damage * (1 - distance / max_distance));
         else if (fall_off_type == FalloffType.Medium)
-            ne.ChangeHealth(owner.player, -damage * (1 - distance / max_distance) * 0.5f - damage * 0.5f);
+            ne.ChangeHealth(owner, -damage * (1 - distance / max_distance) * 0.5f - damage * 0.5f);
         else if (fall_off_type == FalloffType.None)
-            ne.ChangeHealth(owner.player, -damage);
+            ne.ChangeHealth(owner, -damage);
     }
 
     // to be called before cmddamage (this is so the local client can see immediate change)
@@ -106,10 +106,10 @@ public abstract class HitscanFirearm : Firearm
         NetworkEntity ne = ClientScene.FindLocalObject(hit).GetComponent<NetworkEntity>();
         float distance = Vector2.Distance(owner.attacking_offset.position, ne.transform.position);
         if (fall_off_type == FalloffType.Hard)
-            ne.ChangeHealth(owner.player, -damage * (1 - distance / max_distance));
+            ne.ChangeHealth(owner, -damage * (1 - distance / max_distance));
         else if (fall_off_type == FalloffType.Medium)
-            ne.ChangeHealth(owner.player, -damage * (1 - distance / max_distance) * 0.5f - damage * 0.5f);
+            ne.ChangeHealth(owner, -damage * (1 - distance / max_distance) * 0.5f - damage * 0.5f);
         else if (fall_off_type == FalloffType.None)
-            ne.ChangeHealth(owner.player, -damage);
+            ne.ChangeHealth(owner, -damage);
     }
 }

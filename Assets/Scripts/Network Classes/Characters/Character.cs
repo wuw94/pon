@@ -115,12 +115,11 @@ public abstract class Character : NetworkEntity
     public override void OnStartClient()
     {
         base.OnStartClient();
+
         ability_primary = new Ability(true, false);
         ability_reload = new Ability(KeyCode.R, true);
         ability_skill1 = new Ability(KeyCode.LeftShift, false);
         ability_skill2 = new Ability(KeyCode.Space, false);
-        //trail.sortingLayerName = "Player";
-        //trail.sortingOrder = -1;
     }
 
     public override void OnStartAuthority()
@@ -137,7 +136,6 @@ public abstract class Character : NetworkEntity
     public override void Update()
     {
         base.Update();
-        movespeed_multipliers.Update();
         if (isServer)
         {
             ManageStatusAilments();
@@ -145,8 +143,9 @@ public abstract class Character : NetworkEntity
         }
         if (hasAuthority)
         {
+            movespeed_multipliers.Update();
             OverviewCameraSwitch();
-            if (Menu.current != MenuPage.IG_Gameplay)
+            if (MenuManager.current_menu != typeof(MenuInGameGameplay))
                 return;
             if (IsDead())
                 return;
@@ -392,7 +391,7 @@ public abstract class Character : NetworkEntity
     {
         Character to_return = null;
         foreach (Character c in FindObjectsOfType<Character>())
-            if (c != this && c.is_visible && (to_return == null || Vector2.Distance(this.transform.position, c.transform.position) < Vector2.Distance(this.transform.position, to_return.transform.position)))
+            if (c != this && (to_return == null || Vector2.Distance(this.transform.position, c.transform.position) < Vector2.Distance(this.transform.position, to_return.transform.position)))
                 to_return = c;
         return to_return;
     }
@@ -405,7 +404,7 @@ public abstract class Character : NetworkEntity
     {
         Character to_return = null;
         foreach (Character c in FindObjectsOfType<Character>())
-            if (c != this && c.GetTeam() == this.GetTeam() && c.is_visible && (to_return == null || Vector2.Distance(this.transform.position, c.transform.position) < Vector2.Distance(this.transform.position, to_return.transform.position)))
+            if (c != this && c.GetTeam() == this.GetTeam() && (to_return == null || Vector2.Distance(this.transform.position, c.transform.position) < Vector2.Distance(this.transform.position, to_return.transform.position)))
                 to_return = c;
         return to_return;
     }
@@ -418,16 +417,55 @@ public abstract class Character : NetworkEntity
     {
         Character to_return = null;
         foreach (Character c in FindObjectsOfType<Character>())
+            if (c != this && c.GetTeam() != this.GetTeam() && (to_return == null || Vector2.Distance(this.transform.position, c.transform.position) < Vector2.Distance(this.transform.position, to_return.transform.position)))
+                to_return = c;
+        return to_return;
+    }
+
+    /// <summary>
+    /// Get the closest visible character to yourself.
+    /// </summary>
+    /// <returns></returns>
+    protected Character GetClosestVisibleCharacter()
+    {
+        Character to_return = null;
+        foreach (Character c in FindObjectsOfType<Character>())
+            if (c != this && c.is_visible && (to_return == null || Vector2.Distance(this.transform.position, c.transform.position) < Vector2.Distance(this.transform.position, to_return.transform.position)))
+                to_return = c;
+        return to_return;
+    }
+
+    /// <summary>
+    /// Get the closest visible ally to yourself.
+    /// </summary>
+    /// <returns></returns>
+    protected Character GetClosestVisibleAlly()
+    {
+        Character to_return = null;
+        foreach (Character c in FindObjectsOfType<Character>())
+            if (c != this && c.GetTeam() == this.GetTeam() && c.is_visible && (to_return == null || Vector2.Distance(this.transform.position, c.transform.position) < Vector2.Distance(this.transform.position, to_return.transform.position)))
+                to_return = c;
+        return to_return;
+    }
+
+    /// <summary>
+    /// Get the closest visible enemy to yourself.
+    /// </summary>
+    /// <returns></returns>
+    protected Character GetClosestVisibleEnemy()
+    {
+        Character to_return = null;
+        foreach (Character c in FindObjectsOfType<Character>())
             if (c != this && c.GetTeam() != this.GetTeam() && c.is_visible && (to_return == null || Vector2.Distance(this.transform.position, c.transform.position) < Vector2.Distance(this.transform.position, to_return.transform.position)))
                 to_return = c;
         return to_return;
     }
 
     /// <summary>
-    /// Get the closest character to the mouse, besides yourself.
+    /// Get the closest visible character to the mouse, besides yourself.
     /// </summary>
     /// <returns></returns>
-    protected Character GetClosestCharacterToMouse()
+    protected Character GetClosestVisibleCharacterToMouse()
     {
         Character to_return = null;
         Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -438,10 +476,10 @@ public abstract class Character : NetworkEntity
     }
 
     /// <summary>
-    /// Get the closest ally to the mouse, besides yourself.
+    /// Get the closest visible ally to the mouse, besides yourself.
     /// </summary>
     /// <returns></returns>
-    protected Character GetClosestAllyToMouse()
+    protected Character GetClosestVisibleAllyToMouse()
     {
         Character to_return = null;
         if (Camera.main == null)
@@ -454,10 +492,10 @@ public abstract class Character : NetworkEntity
     }
 
     /// <summary>
-    /// Get the closest enemy to the mouse, besides yourself.
+    /// Get the closest visible enemy to the mouse, besides yourself.
     /// </summary>
     /// <returns></returns>
-    protected Character GetClosestEnemyToMouse()
+    protected Character GetClosestVisibleEnemyToMouse()
     {
         Character to_return = null;
         Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -467,41 +505,81 @@ public abstract class Character : NetworkEntity
         return to_return;
     }
 
+    
+
     /// <summary>
     /// Add a movespeed multiplier for yourself. This is computed locally.
     /// </summary>
-    /// <param name="amount"></param>
+    /// <param name="magnitude"></param>
     /// <param name="duration"></param>
-    public void LocalAddMovespeedMultiplier(float amount, float duration, string source, NetworkInstanceId receiver)
+    public void LocalAddMovespeedMultiplier(float magnitude, float duration, AbilityInfo ability_info, NetworkInstanceId receiver)
     {
-        movespeed_multipliers.Add(amount, duration, source, this.netId);
+        this.movespeed_multipliers.Add(magnitude, duration, ability_info);
     }
 
     /// <summary>
     /// Add a movespeed multiplier for somebody else. This is sent to the server and then to the character.
     /// </summary>
-    /// <param name="amount"></param>
+    /// <param name="magnitude"></param>
     /// <param name="duration"></param>
     [Command]
-    public void CmdAddMovespeedMultiplier(float amount, float duration, string source, NetworkInstanceId receiver)
+    public void CmdAddMovespeedMultiplier(float magnitude, float duration, AbilityInfo ability_info, NetworkInstanceId receiver)
     {
-        RpcAddMovespeedMultiplier(amount, duration, source, receiver);
+        RpcAddMovespeedMultiplier(magnitude, duration, ability_info, receiver);
     }
 
     [ClientRpc]
-    private void RpcAddMovespeedMultiplier(float amount, float duration, string source, NetworkInstanceId receiver)
+    private void RpcAddMovespeedMultiplier(float magnitude, float duration, AbilityInfo ability_info, NetworkInstanceId receiver)
     {
         GameObject g = ClientScene.FindLocalObject(receiver);
         if (g != null)
-            g.GetComponent<Character>().movespeed_multipliers.Add(amount, duration, source, this.netId);
+            g.GetComponent<Character>().movespeed_multipliers.Add(magnitude, duration, ability_info);
     }
 
-    public override void Dead(Player source)
+    [ClientRpc]
+    protected virtual void RpcOnExecute()
+    {
+        if (hasAuthority)
+            OnExecute();
+    }
+
+    [ClientRpc]
+    protected virtual void RpcOnAssist()
+    {
+        if (hasAuthority)
+            OnAssist();
+    }
+
+    protected virtual void OnExecute()
+    {
+
+    }
+
+    protected virtual void OnAssist()
+    {
+
+    }
+
+    public override void Dead(Character source)
     {
         if (source == null)
             RpcAddToKillFeed(" >-X-> " + player.name);
         else
-            RpcAddToKillFeed(source.name + " >-X-> " + player.name);
+            RpcAddToKillFeed(source.player.name + " >-X-> " + player.name);
+        List<Character> visited_assists = new List<Character>();
+        if (source != null)
+        {
+            source.RpcOnExecute();
+            visited_assists.Add(source);
+        }
+        foreach (Character c in assist_list)
+        {
+            if (c != null && !visited_assists.Contains(c))
+            {
+                c.RpcOnAssist();
+                visited_assists.Add(c);
+            }
+        }
         StartCoroutine(RespawnProcess());
     }
 
@@ -517,9 +595,9 @@ public abstract class Character : NetworkEntity
         d.GetComponent<NetworkTeam>().PreSpawnChangeTeam(this.GetTeam());
         NetworkServer.Spawn(d);
         Destroy(d, 5);
-        yield return new WaitForSeconds(4);
+        yield return new WaitForSeconds(4.5f);
         RpcPortToSpawn(GetTeam());
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.5f);
         Reload();
         if (hasAuthority)
         {
@@ -549,6 +627,8 @@ public abstract class Character : NetworkEntity
     protected virtual void GUIDisplayMine()
     {
         GUIDisplayOnCharacter(display_style_mine, display_style_mine_health);
+        // Show movement speed
+        GUI.Label(new Rect(30, Screen.height - 40, 300, 100), "Speed: " + ((int)(movespeed_multipliers.Total() * 100)).ToString() + "%");
     }
 
     protected virtual void GUIDisplayAlly()

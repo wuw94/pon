@@ -77,7 +77,7 @@ public class Adenward : Character
 
     private void ManageDashToImage()
     {
-        Character c = GetClosestAllyToMouse();
+        Character c = GetClosestVisibleAllyToMouse();
         if (c != null && Vector2.Distance(c.transform.position, this.transform.position) < SAFEGUARD_RANGE_MAX && Vector2.Distance(c.transform.position, this.transform.position) > SAFEGUARD_RANGE_MIN)
         {
             adenward_dash_to_image.transform.position = c.transform.position;
@@ -204,7 +204,7 @@ public class Adenward : Character
             ability_skill2.Reset();
             return;
         }
-        Character c = GetClosestAllyToMouse();
+        Character c = GetClosestVisibleAllyToMouse();
         if (c != null && Vector2.Distance(c.transform.position, this.transform.position) < SAFEGUARD_RANGE_MAX)
         {
             Vector2 dash_to = c.transform.position;

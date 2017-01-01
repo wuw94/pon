@@ -29,7 +29,7 @@ public class AdenwardBashLogic : CharacterInteractor
         base.OnEnemyEnter(c);
         if (dmg_timer > 0 && !enemies_hit.Contains(c))
         {
-            c.ChangeHealth(ClientScene.FindLocalObject(owner_id).GetComponent<Character>().player, -damage);
+            c.ChangeHealth(ClientScene.FindLocalObject(owner_id).GetComponent<Character>(), -damage);
             enemies_hit.Add(c);
         }
     }

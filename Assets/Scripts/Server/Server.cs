@@ -18,16 +18,6 @@ using System.Collections.Generic;
 /// </summary>
 public class Server : NetworkManager
 {
-    
-    /// <summary>
-    /// Our list of connections (in int based on a connection's connectionId).
-    /// </summary>
-    [HideInInspector]
-    public int[] connections = new int[10] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-
-
-    
-
     private void Start()
     {
         StartMatchMaker();
@@ -38,7 +28,7 @@ public class Server : NetworkManager
     {
         if (SceneManager.GetActiveScene().name == offlineScene)
         {
-            if (Menu.current == MenuPage.PG_Listing)
+            if (MenuManager.current_menu == typeof(MenuPreGameListing))
                 ListInternetMatches();
         }
     }
@@ -51,7 +41,8 @@ public class Server : NetworkManager
             return;
         }
         StopHost();
-        Menu.current = MenuPage.PG_Home;
+        StopMatchMaker();
+        MenuManager.current_menu = typeof(MenuPreGameHome);
         StartMatchMaker();
     }
 
@@ -59,26 +50,12 @@ public class Server : NetworkManager
     {
         while (SceneManager.GetActiveScene().name == offlineScene)
         {
-            if (Menu.current == MenuPage.PG_Listing)
+            if (MenuManager.current_menu == typeof(MenuPreGameListing))
                 ListInternetMatches();
             yield return new WaitForSeconds(1);
         }
     }
 
-
-    /// <summary>
-    /// Stuff to do to each player for them to acknowledge the
-    /// presence of a new connecting player
-    /// </summary>
-    private void UpdateConnections()
-    {
-        GUIShowPlayers[] g = FindObjectsOfType<GUIShowPlayers>();
-        for (int i = 0; i < g.Length; i++)
-        {
-            int id = g[i].connectionToClient.connectionId;
-            g[i].RpcUpdateConnections(connections, id);
-        }
-    }
 
 
     /// <summary>
@@ -119,7 +96,8 @@ public class Server : NetworkManager
 
     public void DestroyInternetMatch()
     {
-        matchMaker.DestroyMatch(matchInfo.networkId, 0, OnDestroyMatch);
+        Debug.Log("DestroyMatch");
+        matchMaker.DestroyMatch(matchInfo.networkId, matchInfo.domain, OnDestroyMatch);
     }
 
 
@@ -159,8 +137,7 @@ public class Server : NetworkManager
     {
         base.OnServerAddPlayer(conn, playerControllerId);
         Debug.Log("OnServerAddPlayer");
-        connections[conn.connectionId] = conn.connectionId;
-        UpdateConnections();
+        // Somebody joined the game
     }
 
     public override void OnServerConnect(NetworkConnection conn)
@@ -173,8 +150,7 @@ public class Server : NetworkManager
     {
         base.OnServerDisconnect(conn);
         Debug.Log("OnServerDisconnect");
-        connections[conn.connectionId] = -1;
-        UpdateConnections();
+        // Somebody exited the game
     }
 
     public override void OnServerError(NetworkConnection conn, int errorCode)
@@ -218,7 +194,14 @@ public class Server : NetworkManager
 
     public override void OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo)
     {
-        base.OnMatchCreate(success, extendedInfo, matchInfo);
+        //base.OnMatchCreate(success, extendedInfo, matchInfo);
+        if (success)
+        {
+            MatchInfo hostInfo = matchInfo;
+            NetworkServer.Listen(hostInfo, 9000);
+            StartHost(hostInfo);
+            Debug.Log(this.matchName);
+        }
         Debug.Log("OnMatchCreate");
     }
 
@@ -232,6 +215,14 @@ public class Server : NetworkManager
     {
         base.OnMatchList(success, extendedInfo, matchList);
         Debug.Log("OnMatchList");
+    }
+
+    public override void OnDestroyMatch(bool success, string extendedInfo)
+    {
+        base.OnDestroyMatch(success, extendedInfo);
+        // This callback is never called.
+        Debug.Log("OnDestroyMatch - success=" +success);
+
     }
 
     public override void OnStartServer()

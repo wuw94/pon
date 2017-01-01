@@ -9,10 +9,20 @@ public class Rockjaw : Character
     public override float max_health { get { return 250; } set { throw new NotImplementedException(); } }
     public override float max_speed { get { return 3.5f; } set { throw new NotImplementedException(); } }
 
+    // Passive
+    private string BATTLE_HUNGER_NAME = "ROCKJAW_BATTLE_HUNGER";
+    private const float BATTLE_HUNGER_DAMAGE_REDUCTION_MIN = 1.0f;
+    private const float BATTLE_HUNGER_DAMAGE_REDUCTION_MAX = 0.5f;
+    private const float BATTLE_HUNGER_SPEED_MIN = 1.0f;
+    private const float BATTLE_HUNGER_SPEED_MAX = 1.2f;
+    private float BATTLE_HUNGER_MAGNITUDE = 0;
+    private const float BATTLE_HUNGER_TIMEOUT = 4;
+    private float BATTLE_HUNGER_TIMER = 0;
+
     // Primary Weapon
     [SerializeField]
     private Shotgun primary;
-    private const float _primary_cooldown = 0.9f;
+    private const float _primary_cooldown = 0.4f;
 
     // Skill 1 (Impale)
     public RockjawCrunchView rockjaw_crunch_view;
@@ -22,6 +32,12 @@ public class Rockjaw : Character
     // Skill 2 (Blitz)
     private const float _skill2_cooldown = 8.0f;
 	public DashingTrail rockjaw_blitz;
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        StartCoroutine(BattleHunger());
+    }
 
     public override void OnStartClient()
     {
@@ -37,6 +53,41 @@ public class Rockjaw : Character
     public override void Passive()
     {
         return;
+    }
+
+    protected override void OnDamagedOther(Character other, float amount)
+    {
+        base.OnDamagedOther(other, amount);
+        BATTLE_HUNGER_TIMER = BATTLE_HUNGER_TIMEOUT;
+    }
+
+    protected override void OnDamagedByOther(Character other, float amount)
+    {
+        base.OnDamagedByOther(other, amount);
+        BATTLE_HUNGER_TIMER = BATTLE_HUNGER_TIMEOUT;
+    }
+
+    private IEnumerator BattleHunger()
+    {
+        while (true)
+        {
+            BATTLE_HUNGER_TIMER = Mathf.Clamp(BATTLE_HUNGER_TIMER - Time.deltaTime, 0, BATTLE_HUNGER_TIMEOUT);
+            if (BATTLE_HUNGER_TIMER == 0)
+                BATTLE_HUNGER_MAGNITUDE -= Time.deltaTime / 4;
+            else
+                BATTLE_HUNGER_MAGNITUDE += Time.deltaTime / 4;
+            BATTLE_HUNGER_MAGNITUDE = Mathf.Clamp(BATTLE_HUNGER_MAGNITUDE, 0, 1);
+            CmdAddMovespeedMultiplier(Mathf.Lerp(BATTLE_HUNGER_SPEED_MIN, BATTLE_HUNGER_SPEED_MAX, BATTLE_HUNGER_MAGNITUDE), 0.2f, new AbilityInfo(BATTLE_HUNGER_NAME, this.netId), this.netId);
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    public override void ChangeHealth(Character source, float amount)
+    {
+        if (amount < 0)
+            base.ChangeHealth(source, amount * Mathf.Lerp(BATTLE_HUNGER_DAMAGE_REDUCTION_MIN, BATTLE_HUNGER_DAMAGE_REDUCTION_MAX, BATTLE_HUNGER_MAGNITUDE));
+        else
+            base.ChangeHealth(source, amount);
     }
 
     // ------------------------------------------------- Shotgun -------------------------------------------------
@@ -136,7 +187,10 @@ public class Rockjaw : Character
 		dt.owner = this;
 		CmdDashTrail();
 
-        for (int i = 0; i < 5; i++)
+        StopCoroutine(primary.Reload());
+        primary.reload_percent = 100;
+        primary.ammunition.Refill();
+        for (int i = 0; i < 4; i++)
         {
 
             Vector2 dir = Vector2.zero;
@@ -149,7 +203,7 @@ public class Rockjaw : Character
             if (Input.GetKey(KeyCode.D))
                 dir += Vector2.right;
 
-            dir = Vector2.ClampMagnitude(dir * 18, 18);
+            dir = Vector2.ClampMagnitude(dir * 30, 30);
             GetComponent<Rigidbody2D>().velocity = dir;
             yield return new WaitForSeconds(0.02f);
         }

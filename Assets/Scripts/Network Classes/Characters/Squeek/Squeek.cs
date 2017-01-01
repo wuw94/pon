@@ -46,8 +46,8 @@ public class Squeek : Character
     // Skill 2 (Transience)
     private const float _skill2_cooldown = 12.0f;
     private const string TRANSIENCE_MOVESPEED_SOURCE_NAME = "SQUEEK_TRANSIENCE";
-    private const float TRANSIENCE_MULTIPLIER_ALLY_MAX = 1.7f;
-    private const float TRANSIENCE_MULTIPLIER_ALLY_MIN = 1.4f;
+    private const float TRANSIENCE_MULTIPLIER_ALLY_MAX = 1.8f;
+    private const float TRANSIENCE_MULTIPLIER_ALLY_MIN = 1.0f;
     private const float TRANSIENCE_MULTIPLIER_ENEMY_MAX = 0.5f;
     private const float TRANSIENCE_MULTIPLIER_ENEMY_MIN = 0.6f;
     private const float TRANSIENCE_DURATION = 3.0f;
@@ -91,7 +91,7 @@ public class Squeek : Character
 	{
 		// Manage regen
 		if (Time.time - time_of_recent_damage > PASSIVE_WAIT_TIME_BEFORE_REGEN)
-			ChangeHealth(this.player, Time.deltaTime * PASSIVE_REGEN_RATE);
+			ChangeHealth(this, Time.deltaTime * PASSIVE_REGEN_RATE);
 
 	}
 
@@ -100,7 +100,7 @@ public class Squeek : Character
 	{
         if (this.latched_to == null)
         {
-            Character c = GetClosestCharacterToMouse();
+            Character c = GetClosestVisibleCharacterToMouse();
             if (c != null && Vector2.Distance(this.transform.position, c.transform.position) < PHOTON_BEAM_RANGE)
             {
                 LocalChangeLatch(c.netId);
@@ -116,9 +116,9 @@ public class Squeek : Character
         if (latched_to == null)
             return;
         if (latched_to.GetTeam() == this.GetTeam())
-            latched_to.ChangeHealth(this.player, Time.deltaTime * Mathf.Lerp(0, PRIMARY_HEAL, strength));
+            latched_to.ChangeHealth(this, Time.deltaTime * Mathf.Lerp(0, PRIMARY_HEAL, strength));
         else
-            latched_to.ChangeHealth(this.player, -Time.deltaTime * Mathf.Lerp(0, PRIMARY_DAMAGE, strength));
+            latched_to.ChangeHealth(this, -Time.deltaTime * Mathf.Lerp(0, PRIMARY_DAMAGE, strength));
 	}
 
     [Command]
@@ -128,9 +128,9 @@ public class Squeek : Character
         if (latched_to == null)
             return;
         if (latched_to.GetTeam() == this.GetTeam())
-            latched_to.ChangeHealth(this.player, Time.deltaTime * Mathf.Lerp(0, PRIMARY_HEAL, strength / PHOTON_BEAM_TOTAL_STRENGTH));
+            latched_to.ChangeHealth(this, Time.deltaTime * Mathf.Lerp(0, PRIMARY_HEAL, strength / PHOTON_BEAM_TOTAL_STRENGTH));
         else
-            latched_to.ChangeHealth(this.player, -Time.deltaTime * Mathf.Lerp(0, PRIMARY_DAMAGE, strength / PHOTON_BEAM_TOTAL_STRENGTH));
+            latched_to.ChangeHealth(this, -Time.deltaTime * Mathf.Lerp(0, PRIMARY_DAMAGE, strength / PHOTON_BEAM_TOTAL_STRENGTH));
     }
 
     private void LocalChangeLatch(NetworkInstanceId id)
@@ -273,7 +273,7 @@ public class Squeek : Character
             if (latched_to != null)
                 c = latched_to;
             else
-                c = GetClosestAlly(); 
+                c = GetClosestVisibleAlly(); 
 
             if (c != null && c.GetType() != typeof(Squeek) && c.GetTeam() == this.GetTeam() && Vector2.Distance(this.transform.position, c.transform.position) < PIGGYBACK_RANGE)
             {
@@ -354,7 +354,7 @@ public class Squeek : Character
                     StartCoroutine(Unmount());
                 squeek_mount_on.transform.position = latched_to.transform.position;
                 squeek_mount_on.GetComponent<SpriteRenderer>().color = new Color(squeek_mount_on.GetComponent<SpriteRenderer>().color.r, squeek_mount_on.GetComponent<SpriteRenderer>().color.g, squeek_mount_on.GetComponent<SpriteRenderer>().color.b, Mathf.Lerp(squeek_mount_on.GetComponent<SpriteRenderer>().color.a, 0, 50 * Time.deltaTime));
-                CmdAddMovespeedMultiplier(PIGGYBACK_MOVESPEED_MULTIPLIER, PIGGYBACK_MOVESPEED_MULTIPLIER_TICK_DURATION, PIGGYBACK_MOVESPEED_SOURCE_NAME, latched_to_id);
+                CmdAddMovespeedMultiplier(PIGGYBACK_MOVESPEED_MULTIPLIER, PIGGYBACK_MOVESPEED_MULTIPLIER_TICK_DURATION, new AbilityInfo(PIGGYBACK_MOVESPEED_SOURCE_NAME, this.netId), latched_to_id);
             }
             if (!mounted)
             {
@@ -362,7 +362,7 @@ public class Squeek : Character
                 if (latched_to != null)
                     c = latched_to;
                 else
-                    c = GetClosestAlly();
+                    c = GetClosestVisibleAlly();
                 if (c == null || c.GetTeam() != this.GetTeam() || Vector2.Distance(this.transform.position, c.transform.position) > PIGGYBACK_RANGE)
                     squeek_mount_on.GetComponent<SpriteRenderer>().color = new Color(squeek_mount_on.GetComponent<SpriteRenderer>().color.r, squeek_mount_on.GetComponent<SpriteRenderer>().color.g, squeek_mount_on.GetComponent<SpriteRenderer>().color.b, 0);
                 else
@@ -390,13 +390,13 @@ public class Squeek : Character
     {
         for (int i = 0; i < TRANSIENCE_DURATION / TRANSIENCE_TICK_DURATION; i++)
         {
-            LocalAddMovespeedMultiplier(Mathf.Lerp(TRANSIENCE_MULTIPLIER_ALLY_MAX, TRANSIENCE_MULTIPLIER_ALLY_MIN, i * 1.0f / TRANSIENCE_DURATION / TRANSIENCE_TICK_DURATION), TRANSIENCE_TICK_DURATION * 2, TRANSIENCE_MOVESPEED_SOURCE_NAME, this.netId);
+            LocalAddMovespeedMultiplier(Mathf.Lerp(TRANSIENCE_MULTIPLIER_ALLY_MAX, TRANSIENCE_MULTIPLIER_ALLY_MIN, i * 1.0f / (TRANSIENCE_DURATION / TRANSIENCE_TICK_DURATION)), TRANSIENCE_TICK_DURATION * 2, new AbilityInfo(TRANSIENCE_MOVESPEED_SOURCE_NAME, this.netId), this.netId);
             if (latched_to != null)
             {
                 if (latched_to.GetTeam() == this.GetTeam())
-                    CmdAddMovespeedMultiplier(Mathf.Lerp(TRANSIENCE_MULTIPLIER_ALLY_MAX, TRANSIENCE_MULTIPLIER_ALLY_MIN, i * 1.0f / TRANSIENCE_DURATION / TRANSIENCE_TICK_DURATION), TRANSIENCE_TICK_DURATION * 2, TRANSIENCE_MOVESPEED_SOURCE_NAME, latched_to_id);
+                    CmdAddMovespeedMultiplier(Mathf.Lerp(TRANSIENCE_MULTIPLIER_ALLY_MAX, TRANSIENCE_MULTIPLIER_ALLY_MIN, i * 1.0f / (TRANSIENCE_DURATION / TRANSIENCE_TICK_DURATION)), TRANSIENCE_TICK_DURATION * 2, new AbilityInfo(TRANSIENCE_MOVESPEED_SOURCE_NAME, this.netId), latched_to_id);
                 else
-                    CmdAddMovespeedMultiplier(Mathf.Lerp(TRANSIENCE_MULTIPLIER_ENEMY_MAX, TRANSIENCE_MULTIPLIER_ENEMY_MIN, i * 1.0f / TRANSIENCE_DURATION / TRANSIENCE_TICK_DURATION), TRANSIENCE_TICK_DURATION * 2, TRANSIENCE_MOVESPEED_SOURCE_NAME, latched_to_id);
+                    CmdAddMovespeedMultiplier(Mathf.Lerp(TRANSIENCE_MULTIPLIER_ENEMY_MAX, TRANSIENCE_MULTIPLIER_ENEMY_MIN, i * 1.0f / (TRANSIENCE_DURATION / TRANSIENCE_TICK_DURATION)), TRANSIENCE_TICK_DURATION * 2, new AbilityInfo(TRANSIENCE_MOVESPEED_SOURCE_NAME, this.netId), latched_to_id);
             }
             yield return new WaitForSeconds(TRANSIENCE_TICK_DURATION);
         }

@@ -44,7 +44,7 @@ public abstract class Firearm : NetworkBehaviour
             is_reloading = true;
             reload_percent = 0;
             ReloadStart();
-            for (int i = 0; i < 100; i++)
+            while (reload_percent < 100)
             {
                 reload_percent++;
                 yield return new WaitForSeconds(reload_time / 100.0f);

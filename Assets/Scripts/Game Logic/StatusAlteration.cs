@@ -26,7 +26,6 @@ public struct StatusAlteration
     /// the effect isn't extended.
     /// </summary>
     /// <param name="duration"></param>
-    
     public void Inflict(float duration)
     {
         if (_time_stamp < Time.time + duration)

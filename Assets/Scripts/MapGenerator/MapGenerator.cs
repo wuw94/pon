@@ -4,13 +4,17 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 
 using System.Collections.Generic;
-
+/// <summary>
+/// The MapGenerator is a singleton object that iterates through the list of modules and generates them one-by-one.
+/// MapGenerator hosts several static methods for creating the images to be displayed.
+/// MapGenerator is also responsible for making sure all connected players have finished generating the map.
+/// </summary>
 public class MapGenerator : NetworkBehaviour
 {
     public const int PIXELS_PER_UNIT = 100;
     public const int DRAW_PAD = 1;
 
-    public Point dimension = new Point(50, 25);
+    public Point dimension;
     public UsageChart usage_chart;
     public Module[] modules;
 
@@ -58,7 +62,7 @@ public class MapGenerator : NetworkBehaviour
     private void RpcSwitchToLoading()
     {
         Settings.RandomizeLoadingWords();
-        Menu.current = MenuPage.IG_LoadingMap;
+        MenuManager.current_menu = typeof(MenuInGameLoadingMap);
     }
 
     private IEnumerator WaitForDone()

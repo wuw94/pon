@@ -39,7 +39,7 @@ public class RockjawCrunchLogic : CharacterInteractor
 
     private IEnumerator WaitForDamage()
     {
-        Player source = ClientScene.FindLocalObject(owner_id).GetComponent<Character>().player;
+        Character source = ClientScene.FindLocalObject(owner_id).GetComponent<Character>();
         while (damage_occur > 0)
         {
             damage_occur -= Time.deltaTime;
