@@ -29,6 +29,9 @@ public class MenuPreGameListing : Menu
         if (selection_strings.Length != 0)
             if (GUI.Button(new Rect(PG_GROUP_WIDTH - 80, PG_GROUP_HEIGHT - 50, 60, 30), "Join"))
             {
+                if (NetworkManager.singleton.matches[current_selection].name.StartsWith(Settings.PLAYER_NAME))
+                    return;
+                Settings.WAIT_FOR.Add(Settings.WaitTypes.JOIN_MATCH);
                 MenuManager.current_menu = typeof(MenuInGameConfigureGame);
                 MonoBehaviour.FindObjectOfType<Server>().JoinInternetMatch(NetworkManager.singleton.matches[current_selection]);
             }

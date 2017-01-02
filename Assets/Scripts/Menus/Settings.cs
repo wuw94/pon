@@ -1,5 +1,30 @@
-﻿public static class Settings
+﻿using System.Collections.Generic;
+
+public static class Settings
 {
+    public enum WaitTypes
+    {
+        CREATE_MATCH_CALLBACK,
+        DESTROY_MATCH_CALLBACK,
+        CREATE_MATCH,
+        JOIN_MATCH
+    };
+
+    public static Dictionary<WaitTypes, string> WAIT_MESSAGE = new Dictionary<WaitTypes, string>()
+    {
+        { WaitTypes.CREATE_MATCH_CALLBACK, "Creating Game" },
+        { WaitTypes.DESTROY_MATCH_CALLBACK, "Destroying Game" },
+        { WaitTypes.CREATE_MATCH, "Creating Game" },
+        { WaitTypes.JOIN_MATCH, "Joining Game" }
+    };
+
+
+    /// <summary>
+    /// An list that is set to what we're waiting for. If the list is empty, we're not waiting for anything.
+    /// </summary>
+    public static List<WaitTypes> WAIT_FOR = new List<WaitTypes>();
+
+
     public static string letters = "";
     public static string PLAYER_NAME = "";
 

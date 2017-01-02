@@ -67,6 +67,7 @@ public class MenuInGameConfigureGame : Menu
         if (Player.mine.is_host && neutral_players.Count == 0)
             if (GUI.Button(new Rect(PG_GROUP_WIDTH - 80, PG_GROUP_HEIGHT - 50, 60, 30), "Start"))
             {
+                MonoBehaviour.FindObjectOfType<Server>().UnlistMatch();
                 MapGenerator map_generator = MonoBehaviour.FindObjectOfType<MapGenerator>();
                 map_generator.StartCoroutine(map_generator.BeginGeneration());
             }
@@ -76,12 +77,19 @@ public class MenuInGameConfigureGame : Menu
 
     public override void Esc()
     {
-        if (Player.mine.is_host)
+        if (Settings.WAIT_FOR.Count > 0)
+            return;
+        if (Player.mine != null)
         {
-            Debug.Log("NAME");
-            Debug.Log(MonoBehaviour.FindObjectOfType<Server>());
-            MonoBehaviour.FindObjectOfType<Server>().DestroyInternetMatch();
+            if (Player.mine.is_host)
+            {
+                Settings.WAIT_FOR.Add(Settings.WaitTypes.DESTROY_MATCH_CALLBACK);
+                MonoBehaviour.FindObjectOfType<Server>().DestroyInternetMatch();
+            }
+            else
+            {
+                MonoBehaviour.FindObjectOfType<Server>().SendToHomeMenu();
+            }
         }
-        MonoBehaviour.FindObjectOfType<Server>().ExitMatchToHome();
     }
 }

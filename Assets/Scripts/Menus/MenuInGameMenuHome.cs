@@ -40,7 +40,9 @@ public class MenuInGameMenuHome : Menu
             }
 
         if (GUI.Button(new Rect(15, 355, IG_GROUP_WIDTH - 30, 30), "Quit"))
-            MonoBehaviour.FindObjectOfType<Server>().ExitMatchToHome();
+        {
+            MonoBehaviour.FindObjectOfType<Server>().SendToHomeMenu();
+        }
         GUI.EndGroup();
     }
 

@@ -15,6 +15,7 @@ public class Rockjaw : Character
     private const float BATTLE_HUNGER_DAMAGE_REDUCTION_MAX = 0.5f;
     private const float BATTLE_HUNGER_SPEED_MIN = 1.0f;
     private const float BATTLE_HUNGER_SPEED_MAX = 1.2f;
+    [SyncVar]
     private float BATTLE_HUNGER_MAGNITUDE = 0;
     private const float BATTLE_HUNGER_TIMEOUT = 4;
     private float BATTLE_HUNGER_TIMER = 0;

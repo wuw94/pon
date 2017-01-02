@@ -23,13 +23,20 @@ public class MenuPreGameHome : Menu
         // Create Game
         if (GUI.Button(new Rect(PG_GROUP_WIDTH / 2 - 60, 160, 120, 30), "Host") && Settings.IsValidName(Settings.PLAYER_NAME))
         {
+            if (Settings.WAIT_FOR.Count > 0)
+                return;
+            Settings.WAIT_FOR.Add(Settings.WaitTypes.CREATE_MATCH_CALLBACK);
             MenuManager.current_menu = typeof(MenuInGameConfigureGame);
             MonoBehaviour.FindObjectOfType<Server>().CreateInternetMatch(Settings.PLAYER_NAME);
         }
 
         // Join Game
         if (GUI.Button(new Rect(PG_GROUP_WIDTH / 2 - 60, 190, 120, 30), "Join") && Settings.IsValidName(Settings.PLAYER_NAME))
+        {
+            if (Settings.WAIT_FOR.Count > 0)
+                return;
             MenuManager.current_menu = typeof(MenuPreGameListing);
+        }
 
         // Quit Game
         if (GUI.Button(new Rect(PG_GROUP_WIDTH / 2 - 60, 330, 120, 30), "Quit"))
