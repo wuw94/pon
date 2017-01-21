@@ -7,7 +7,8 @@ public static class Settings
         CREATE_MATCH_CALLBACK,
         DESTROY_MATCH_CALLBACK,
         CREATE_MATCH,
-        JOIN_MATCH
+        JOIN_MATCH,
+        QUIT_GAME
     };
 
     public static Dictionary<WaitTypes, string> WAIT_MESSAGE = new Dictionary<WaitTypes, string>()
@@ -15,7 +16,8 @@ public static class Settings
         { WaitTypes.CREATE_MATCH_CALLBACK, "Creating Game" },
         { WaitTypes.DESTROY_MATCH_CALLBACK, "Destroying Game" },
         { WaitTypes.CREATE_MATCH, "Creating Game" },
-        { WaitTypes.JOIN_MATCH, "Joining Game" }
+        { WaitTypes.JOIN_MATCH, "Joining Game" },
+        { WaitTypes.QUIT_GAME, "Quitting Game" }
     };
 
 

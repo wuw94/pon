@@ -19,6 +19,9 @@ public class MenuPreGameListing : Menu
             Esc();
         GUI.Label(new Rect(PG_GROUP_WIDTH / 2 - 150, 40, 300, 30), "Hello [" + Settings.PLAYER_NAME + "]. Here are your matches");
 
+        MonoBehaviour.FindObjectOfType<Server>().ListInternetMatches();
+
+
         if (NetworkManager.singleton.matches != null)
         {
             selection_strings = new string[NetworkManager.singleton.matches.Count];

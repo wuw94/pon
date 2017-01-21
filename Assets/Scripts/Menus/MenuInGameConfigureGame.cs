@@ -85,10 +85,12 @@ public class MenuInGameConfigureGame : Menu
             {
                 Settings.WAIT_FOR.Add(Settings.WaitTypes.DESTROY_MATCH_CALLBACK);
                 MonoBehaviour.FindObjectOfType<Server>().DestroyInternetMatch();
+                if (MonoBehaviour.FindObjectOfType<Server>().LAN_mode)
+                    MonoBehaviour.FindObjectOfType<Server>().ResetToHome();
             }
             else
             {
-                MonoBehaviour.FindObjectOfType<Server>().SendToHomeMenu();
+                MonoBehaviour.FindObjectOfType<Server>().ResetToHome();
             }
         }
     }

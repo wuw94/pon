@@ -42,20 +42,24 @@ public sealed class MenuManager : MonoBehaviour
             return;
         if (SceneManager.GetActiveScene().name == NetworkManager.singleton.offlineScene)
         {
-            GUI.Label(new Rect(Screen.width - 200, Screen.height - 20, 200, 20), "For debugging. No touchie!");
-            if (GUI.Button(new Rect(Screen.width - 40, Screen.height - 20, 20, 20), "C"))
+            GUI.Label(new Rect(Screen.width - 200, Screen.height - 40, 200, 20), "For debugging. No touchie!");
+            if (GUI.Button(new Rect(Screen.width - 200, Screen.height - 20, 100, 20), "LAN MAKE"))
             {
-                Settings.PLAYER_NAME = "host";
+                FindObjectOfType<Server>().LAN_mode = true;
+                Settings.PLAYER_NAME = Network.player.ipAddress;
                 current_menu = typeof(MenuInGameConfigureGame);
                 NetworkManager.singleton.StartHost();
             }
-            if (GUI.Button(new Rect(Screen.width - 20, Screen.height - 20, 20, 20), "J"))
+            
+            if (GUI.Button(new Rect(Screen.width - 100, Screen.height - 20, 100, 20), "LAN JOIN"))
             {
-                Settings.PLAYER_NAME = "client";
-                NetworkManager.singleton.networkAddress = "localhost";
+                FindObjectOfType<Server>().LAN_mode = true;
+                NetworkManager.singleton.networkAddress = Settings.PLAYER_NAME;
+                Settings.PLAYER_NAME = Network.player.ipAddress;
                 current_menu = typeof(MenuInGameConfigureGame);
                 NetworkManager.singleton.StartClient();
             }
+            
         }
     }
 }
