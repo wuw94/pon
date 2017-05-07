@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 [Serializable]
-public class Building : Container
+public class Building : ContainerXXX
 {
     private const int MAX_ROOMS = 14;
     private const int ROOM_SIZE_GUARANTEES_OBJECTIVE = 5;
@@ -21,7 +21,7 @@ public class Building : Container
     public Building()
         : base() { }
     
-    public Building(Container owner, Point position, Point dimension)
+    public Building(ContainerXXX owner, Point position, Point dimension)
         : base(owner, position, dimension)
     {
         SplitRooms();
@@ -49,13 +49,13 @@ public class Building : Container
 
 
         
-        foreach (Container container in new Container(this, p1, d1).RecursiveDivision(ROOM_SIZE))
+        foreach (ContainerXXX container in new ContainerXXX(this, p1, d1).RecursiveDivision(ROOM_SIZE))
             rooms.Add(new Room(this, container));
-        foreach (Container container in new Container(this, p2, d2).RecursiveDivision(ROOM_SIZE))
+        foreach (ContainerXXX container in new ContainerXXX(this, p2, d2).RecursiveDivision(ROOM_SIZE))
             rooms.Add(new Room(this, container));
-        foreach (Container container in new Container(this, p3, d3).RecursiveDivision(ROOM_SIZE))
+        foreach (ContainerXXX container in new ContainerXXX(this, p3, d3).RecursiveDivision(ROOM_SIZE))
             rooms.Add(new Room(this, container));
-        foreach (Container container in new Container(this, p4, d4).RecursiveDivision(ROOM_SIZE))
+        foreach (ContainerXXX container in new ContainerXXX(this, p4, d4).RecursiveDivision(ROOM_SIZE))
             rooms.Add(new Room(this, container));
 
         // there cannot be more than a certain number of rooms

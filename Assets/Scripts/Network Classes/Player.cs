@@ -54,7 +54,7 @@ public class Player : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
-        CmdSetName(Settings.PLAYER_NAME);
+        CmdSetName("player.cs");
         Player.mine = this;
         if (isServer && isClient)
             is_host = true;
@@ -85,7 +85,7 @@ public class Player : NetworkBehaviour
 
     public void BeginSequence()
     {
-        MenuManager.current_menu = typeof(MenuInGameGameplay);
+        //MenuManager.current = typeof(MenuInGameGameplay);
         Destroy(FindObjectOfType<Camera>().gameObject);
         CmdMakeCharacter(selected_character);
     }

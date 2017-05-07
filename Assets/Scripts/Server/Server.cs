@@ -34,29 +34,51 @@ public class Server : NetworkManager
 
     private IEnumerator co = null;
 
+    private const string RELAY_SERVER = "52.5.104.224";
+
+    private float updated_ping = 0;
+
     private void Start()
     {
         StartMatchMaker();
+        StartCoroutine(CheckPing());
+        
     }
 
     private void Update()
     {
-        
+    }
+
+    private IEnumerator CheckPing()
+    {
+        while (true)
+        {
+            Ping ping = new Ping(RELAY_SERVER);
+            while (!ping.isDone)
+                yield return null;
+            updated_ping = ping.time;
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
+    private void OnGUI()
+    {
+        //GUI.Label(new Rect(0, 0, 100, 20), "Ping: " + updated_ping + "ms");
     }
 
     private void OnApplicationQuit()
     {
         // Do not let the application quit if the game is waiting for something.
-        if (!Settings.WAIT_FOR.Contains(Settings.WaitTypes.QUIT_GAME) && Settings.WAIT_FOR.Count > 0)
+        if (!Globals.WAIT_FOR.Contains(Globals.WaitTypes.QUIT_GAME) && Globals.WAIT_FOR.Count > 0)
         {
             Application.CancelQuit();
             return;
         }
-        if (!Settings.WAIT_FOR.Contains(Settings.WaitTypes.QUIT_GAME))
+        if (!Globals.WAIT_FOR.Contains(Globals.WaitTypes.QUIT_GAME))
         {
             Application.CancelQuit();
             Debug.LogError("OnApplicationQuit()");
-            Settings.WAIT_FOR.Add(Settings.WaitTypes.QUIT_GAME);
+            Globals.WAIT_FOR.Add(Globals.WaitTypes.QUIT_GAME);
 
             // In the case that you're the creator of a game, you must destroy the match before quitting.
             if (Player.mine != null && Player.mine.is_host)
@@ -104,18 +126,18 @@ public class Server : NetworkManager
     /// </summary>
     public void ResetToHome()
     {
-        Debug.Log(Settings.WAIT_FOR.Contains(Settings.WaitTypes.QUIT_GAME));
-        if (Settings.WAIT_FOR.Contains(Settings.WaitTypes.QUIT_GAME))
+        Debug.Log(Globals.WAIT_FOR.Contains(Globals.WaitTypes.QUIT_GAME));
+        if (Globals.WAIT_FOR.Contains(Globals.WaitTypes.QUIT_GAME))
         {
             Application.Quit();
         }
         else
         {
-            Settings.WAIT_FOR = new List<Settings.WaitTypes>();
+            Globals.WAIT_FOR = new List<Globals.WaitTypes>();
             StopHost();
             StopMatchMaker();
             StartMatchMaker();
-            MenuManager.current_menu = typeof(MenuPreGameHome);
+            //MenuManager.current = typeof(StandbyMenu);
         }
     }
     
@@ -306,8 +328,8 @@ public class Server : NetworkManager
         if (success)
         {
             this.matchInfo = matchInfo;
-            Settings.WAIT_FOR.Remove(Settings.WaitTypes.CREATE_MATCH_CALLBACK);
-            Settings.WAIT_FOR.Add(Settings.WaitTypes.CREATE_MATCH);
+            Globals.WAIT_FOR.Remove(Globals.WaitTypes.CREATE_MATCH_CALLBACK);
+            Globals.WAIT_FOR.Add(Globals.WaitTypes.CREATE_MATCH);
         }
         else
         {
@@ -384,11 +406,11 @@ public class Server : NetworkManager
 
         if (Player.mine.is_host)
         {
-            Settings.WAIT_FOR.Remove(Settings.WaitTypes.CREATE_MATCH);
+            Globals.WAIT_FOR.Remove(Globals.WaitTypes.CREATE_MATCH);
         }
         else
         {
-            Settings.WAIT_FOR.Remove(Settings.WaitTypes.JOIN_MATCH);
+            Globals.WAIT_FOR.Remove(Globals.WaitTypes.JOIN_MATCH);
             StopCoroutine(co);
             if (this.matchInfo == null || this.matchInfo.nodeId == NodeID.Invalid)
                 ResetToHome();
@@ -448,8 +470,8 @@ public class Server : NetworkManager
     {
         base.OnDestroyMatch(success, extendedInfo);
         Debug.LogError("OnDestroyMatch: success=" + success + System.DateTime.Now.TimeOfDay);
-        Debug.Log(Settings.WAIT_FOR.Contains(Settings.WaitTypes.QUIT_GAME));
-        if (Settings.WAIT_FOR.Contains(Settings.WaitTypes.QUIT_GAME))
+        Debug.Log(Globals.WAIT_FOR.Contains(Globals.WaitTypes.QUIT_GAME));
+        if (Globals.WAIT_FOR.Contains(Globals.WaitTypes.QUIT_GAME))
             Application.Quit();
         if (success)
         {

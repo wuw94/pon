@@ -9,9 +9,9 @@ using System.Collections;
 public class AssetUtility{
 	//static SerializedObject profile;
 
-	public static UnityEngine.Object CreateAsset<T> (string atPath = "", string name = "unNamed") where T : ScriptableObject
+	public static UnityEngine.Object CreateAsset<T> (string atPath = "", string name = "unNamed") where T : UnityEngine.ScriptableObject
 	{
-		T asset = ScriptableObject.CreateInstance<T> ();
+		T asset = UnityEngine.ScriptableObject.CreateInstance<T> ();
 		
 		string path = AssetDatabase.GetAssetPath (Selection.activeObject);
 		if (path == "") 
@@ -36,7 +36,7 @@ public class AssetUtility{
 		return asset;
 	}
 
-	public static Object LoadAsset<T>(string atPath, string name) where T : ScriptableObject{
+	public static Object LoadAsset<T>(string atPath, string name) where T : UnityEngine.ScriptableObject{
 		return AssetDatabase.LoadAssetAtPath<T> (atPath + "/" + name);
 	}
 

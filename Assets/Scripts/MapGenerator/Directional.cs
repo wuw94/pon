@@ -5,17 +5,17 @@ using System.Collections.Generic;
 /// A directional. Positions are relative to room. Access through 'owner'
 /// </summary>
 [System.Serializable]
-public class Directional : Container
+public class Directional : ContainerXXX
 {
     public Direction direction;
 
     public Directional()
         : base() { }
 
-    public Directional(Container owner, Point relative_position, Direction direction)
-        : this(new Container(owner, relative_position, new Point(1, 1)), direction) { }
+    public Directional(ContainerXXX owner, Point relative_position, Direction direction)
+        : this(new ContainerXXX(owner, relative_position, new Point(1, 1)), direction) { }
 
-    public Directional(Container container, Direction direction)
+    public Directional(ContainerXXX container, Direction direction)
         : base(container)
     {
         this.direction = direction;

@@ -15,7 +15,7 @@ public class BuildingModule : Module
     private const int BUILDING_PAD = 2;
     public IntRange building_size = new IntRange(4, 5);
 
-    public Container world;
+    public ContainerXXX world;
     public List<Building> buildings = new List<Building>();
     public GameObject collider_wall;
     public GameObject collider_window;
@@ -60,7 +60,7 @@ public class BuildingModule : Module
 
     public override void Initialize()
     {
-        world = new Container(null, Point.zero, map.dimension);
+        world = new ContainerXXX(null, Point.zero, map.dimension);
         MakeBuildings();
         MakeLights();
         MakeNucleus();

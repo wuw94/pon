@@ -4,7 +4,7 @@ using UnityEngine;
 
 //[HelpURL("sdfsdf.com")]
 
-public class DynamicLightSetting : ScriptableObject
+public class DynamicLightSetting : UnityEngine.ScriptableObject
 {
 
 	//[Header("Settings")]

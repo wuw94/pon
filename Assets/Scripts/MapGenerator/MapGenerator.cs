@@ -61,8 +61,8 @@ public class MapGenerator : NetworkBehaviour
     [ClientRpc]
     private void RpcSwitchToLoading()
     {
-        Settings.RandomizeLoadingWords();
-        MenuManager.current_menu = typeof(MenuInGameLoadingMap);
+        Globals.RandomizeLoadingWords();
+        //MenuManager.current = typeof(MenuInGameLoadingMap);
     }
 
     private IEnumerator WaitForDone()

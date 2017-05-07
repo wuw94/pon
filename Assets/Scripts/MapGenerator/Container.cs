@@ -39,9 +39,9 @@ using System.Collections.Generic;
 /// <summary>
 /// A class like Unity's Rect, but better.
 /// </summary>
-public class Container
+public class ContainerXXX
 {
-    public Container owner;
+    public ContainerXXX owner;
     public Depth depth;
     private int left;
     private int right;
@@ -74,18 +74,18 @@ public class Container
     public Point dimension;
 
 
-    public Container() { }
+    public ContainerXXX() { }
 
-    public Container(Container container)
+    public ContainerXXX(ContainerXXX container)
         : this(container.owner, container.relative_position, container.position_at_current_depth, container.dimension) { }
 
-    public Container(Container owner, int left, int right, int top, int bottom)
+    public ContainerXXX(ContainerXXX owner, int left, int right, int top, int bottom)
         : this(owner, new Point(left, bottom), new Point(right - left, top - bottom)) { }
     
-    public Container(Container owner, Point relative_position, Point dimension)
+    public ContainerXXX(ContainerXXX owner, Point relative_position, Point dimension)
         : this(owner, relative_position, Point.zero, dimension) { }
     
-    public Container(Container owner, Point relative_position, Point position, Point dimension)
+    public ContainerXXX(ContainerXXX owner, Point relative_position, Point position, Point dimension)
     {
         this.owner = owner;
         this.depth = owner == null ? 0 : (Depth)((int)owner.depth + 1);
@@ -122,19 +122,19 @@ public class Container
         return this.ToDepth(depth).bottom;
     }
 
-    private Container ToDepth(Depth depth)
+    private ContainerXXX ToDepth(Depth depth)
     {
-        Container to_return = new Container(this);
+        ContainerXXX to_return = new ContainerXXX(this);
         while (to_return.depth > depth)
             to_return = to_return.MinusDepth();
         return to_return;
     }
 
-    private Container MinusDepth()
+    private ContainerXXX MinusDepth()
     {
         if ((int)this.depth == 0)
             return this;
-        return new Container(this.owner.owner, this.owner.relative_position, this.position_at_current_depth + this.relative_position, this.dimension);
+        return new ContainerXXX(this.owner.owner, this.owner.relative_position, this.position_at_current_depth + this.relative_position, this.dimension);
     }
 
 
@@ -143,11 +143,11 @@ public class Container
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
-    public Container Join(Container other)
+    public ContainerXXX Join(ContainerXXX other)
     {
         if (this.depth != other.depth)
             Debug.LogError("Joining two Containers of different depth! " + this.depth + " and " + other.depth);
-        return new Container(this.owner,
+        return new ContainerXXX(this.owner,
                                 Mathf.Min(this.Left(depth - 1), other.Left(depth - 1)),
                                 Mathf.Max(this.Right(depth - 1), other.Right(depth - 1)),
                                 Mathf.Max(this.Top(depth - 1), other.Top(depth - 1)),
@@ -160,12 +160,12 @@ public class Container
     /// <param name="mine"></param>
     /// <param name="other"></param>
     /// <returns></returns>
-    public bool Overlaps(Container other)
+    public bool Overlaps(ContainerXXX other)
     {
         return !(this.Right(Depth.World) <= other.Left(Depth.World) || other.Right(Depth.World) <= this.Left(Depth.World) || this.Top(Depth.World) <= other.Bottom(Depth.World) || other.Top(Depth.World) <= this.Bottom(Depth.World));
     }
 
-    public bool Touching(Container other) // Diagonal corners don't count as touching
+    public bool Touching(ContainerXXX other) // Diagonal corners don't count as touching
     {
         if (this.Right(Depth.World) == other.Left(Depth.World) || this.Left(Depth.World) == other.Right(Depth.World))
         {

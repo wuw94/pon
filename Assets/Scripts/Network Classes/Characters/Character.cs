@@ -145,8 +145,10 @@ public abstract class Character : NetworkEntity
         {
             movespeed_multipliers.Update();
             OverviewCameraSwitch();
-            if (MenuManager.current_menu != typeof(MenuInGameGameplay))
+            /*
+            if (MenuManager.current != typeof(MenuInGameGameplay))
                 return;
+            */
             if (IsDead())
                 return;
             FaceMouse();

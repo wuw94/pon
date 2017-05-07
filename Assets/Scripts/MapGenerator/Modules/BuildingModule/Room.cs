@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 [System.Serializable]
-public class Room : Container
+public class Room : ContainerXXX
 {
-    public List<Container> floors = new List<Container>();
+    public List<ContainerXXX> floors = new List<ContainerXXX>();
     public List<Directional> entrances = new List<Directional>();
     public List<Directional> windows = new List<Directional>();
     public List<Directional> walls = new List<Directional>();
@@ -19,7 +19,7 @@ public class Room : Container
     public Room()
         : base() { }
 
-    public Room(Building owner, Container container)
+    public Room(Building owner, ContainerXXX container)
         : base(container)
     {
         this.owner = owner;
@@ -31,7 +31,7 @@ public class Room : Container
     {
         for (int x = 0; x < dimension.x; x++)
             for (int y = 0; y < dimension.y; y++)
-                floors.Add(new Container(this, new Point(x, y), new Point(1, 1)));
+                floors.Add(new ContainerXXX(this, new Point(x, y), new Point(1, 1)));
     }
 
     private void AssignWalls()

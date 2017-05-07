@@ -9,10 +9,10 @@ public static class ContainerExtension
     /// <param name="mine"></param>
     /// <param name="range"></param>
     /// <returns></returns>
-    public static List<Container> RecursiveDivision(this Container mine, IntRange range)
+    public static List<ContainerXXX> RecursiveDivision(this ContainerXXX mine, IntRange range)
     {
         
-        List<Container> to_return = new List<Container>();
+        List<ContainerXXX> to_return = new List<ContainerXXX>();
 
         // Get random dimensions.
         int size = range.Random();
@@ -31,9 +31,9 @@ public static class ContainerExtension
 
         ContainerSplitPacket csp = mine.QuadSplit(container_dimension, corner);
         to_return.Add(csp.result);
-        foreach (Container container in csp.container1.RecursiveDivision(range))
+        foreach (ContainerXXX container in csp.container1.RecursiveDivision(range))
             to_return.Add(container);
-        foreach (Container container in csp.container2.RecursiveDivision(range))
+        foreach (ContainerXXX container in csp.container2.RecursiveDivision(range))
             to_return.Add(container);
 
         return to_return;
@@ -41,43 +41,43 @@ public static class ContainerExtension
 
 
 
-    private static ContainerSplitPacket QuadSplit(this Container mine, Point dimension, Corner corner)
+    private static ContainerSplitPacket QuadSplit(this ContainerXXX mine, Point dimension, Corner corner)
     {
         ContainerSplitPacket to_return = new ContainerSplitPacket();
-        Container b1 = new Container(); //  [ b1  b2 ]
-        Container b2 = new Container(); //  [ b1  b2 ]
-        Container b3 = new Container();
-        Container b4 = new Container();
+        ContainerXXX b1 = new ContainerXXX(); //  [ b1  b2 ]
+        ContainerXXX b2 = new ContainerXXX(); //  [ b1  b2 ]
+        ContainerXXX b3 = new ContainerXXX();
+        ContainerXXX b4 = new ContainerXXX();
 
 
         switch (corner)
         {
             case Corner.TopLeft:
-                b1 = new Container(mine.owner, mine.Left(Depth.Building), mine.Left(Depth.Building) + dimension.x, mine.Top(Depth.Building), mine.Top(Depth.Building) - dimension.y);
-                b2 = new Container(mine.owner, mine.Left(Depth.Building) + dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building), mine.Top(Depth.Building) - dimension.y);
-                b3 = new Container(mine.owner, mine.Left(Depth.Building), mine.Left(Depth.Building) + dimension.x, mine.Top(Depth.Building) - dimension.y, mine.Bottom(Depth.Building));
-                b4 = new Container(mine.owner, mine.Left(Depth.Building) + dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building) - dimension.y, mine.Bottom(Depth.Building));
+                b1 = new ContainerXXX(mine.owner, mine.Left(Depth.Building), mine.Left(Depth.Building) + dimension.x, mine.Top(Depth.Building), mine.Top(Depth.Building) - dimension.y);
+                b2 = new ContainerXXX(mine.owner, mine.Left(Depth.Building) + dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building), mine.Top(Depth.Building) - dimension.y);
+                b3 = new ContainerXXX(mine.owner, mine.Left(Depth.Building), mine.Left(Depth.Building) + dimension.x, mine.Top(Depth.Building) - dimension.y, mine.Bottom(Depth.Building));
+                b4 = new ContainerXXX(mine.owner, mine.Left(Depth.Building) + dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building) - dimension.y, mine.Bottom(Depth.Building));
                 to_return.result = b1;
                 break;
             case Corner.TopRight:
-                b1 = new Container(mine.owner, mine.Left(Depth.Building), mine.Right(Depth.Building) - dimension.x, mine.Top(Depth.Building), mine.Top(Depth.Building) - dimension.y);
-                b2 = new Container(mine.owner, mine.Right(Depth.Building) - dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building), mine.Top(Depth.Building) - dimension.y);
-                b3 = new Container(mine.owner, mine.Left(Depth.Building), mine.Right(Depth.Building) - dimension.x, mine.Top(Depth.Building) - dimension.y, mine.Bottom(Depth.Building));
-                b4 = new Container(mine.owner, mine.Right(Depth.Building) - dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building) - dimension.y, mine.Bottom(Depth.Building));
+                b1 = new ContainerXXX(mine.owner, mine.Left(Depth.Building), mine.Right(Depth.Building) - dimension.x, mine.Top(Depth.Building), mine.Top(Depth.Building) - dimension.y);
+                b2 = new ContainerXXX(mine.owner, mine.Right(Depth.Building) - dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building), mine.Top(Depth.Building) - dimension.y);
+                b3 = new ContainerXXX(mine.owner, mine.Left(Depth.Building), mine.Right(Depth.Building) - dimension.x, mine.Top(Depth.Building) - dimension.y, mine.Bottom(Depth.Building));
+                b4 = new ContainerXXX(mine.owner, mine.Right(Depth.Building) - dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building) - dimension.y, mine.Bottom(Depth.Building));
                 to_return.result = b2;
                 break;
             case Corner.BottomLeft:
-                b1 = new Container(mine.owner, mine.Left(Depth.Building), mine.Left(Depth.Building) + dimension.x, mine.Top(Depth.Building), mine.Bottom(Depth.Building) + dimension.y);
-                b2 = new Container(mine.owner, mine.Left(Depth.Building) + dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building), mine.Bottom(Depth.Building) + dimension.y);
-                b3 = new Container(mine.owner, mine.Left(Depth.Building), mine.Left(Depth.Building) + dimension.x, mine.Bottom(Depth.Building) + dimension.y, mine.Bottom(Depth.Building));
-                b4 = new Container(mine.owner, mine.Left(Depth.Building) + dimension.x, mine.Right(Depth.Building), mine.Bottom(Depth.Building) + dimension.y, mine.Bottom(Depth.Building));
+                b1 = new ContainerXXX(mine.owner, mine.Left(Depth.Building), mine.Left(Depth.Building) + dimension.x, mine.Top(Depth.Building), mine.Bottom(Depth.Building) + dimension.y);
+                b2 = new ContainerXXX(mine.owner, mine.Left(Depth.Building) + dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building), mine.Bottom(Depth.Building) + dimension.y);
+                b3 = new ContainerXXX(mine.owner, mine.Left(Depth.Building), mine.Left(Depth.Building) + dimension.x, mine.Bottom(Depth.Building) + dimension.y, mine.Bottom(Depth.Building));
+                b4 = new ContainerXXX(mine.owner, mine.Left(Depth.Building) + dimension.x, mine.Right(Depth.Building), mine.Bottom(Depth.Building) + dimension.y, mine.Bottom(Depth.Building));
                 to_return.result = b3;
                 break;
             case Corner.BottomRight:
-                b1 = new Container(mine.owner, mine.Left(Depth.Building), mine.Right(Depth.Building) - dimension.x, mine.Top(Depth.Building), mine.Bottom(Depth.Building) + dimension.y);
-                b2 = new Container(mine.owner, mine.Right(Depth.Building) - dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building), mine.Bottom(Depth.Building) + dimension.y);
-                b3 = new Container(mine.owner, mine.Left(Depth.Building), mine.Right(Depth.Building) - dimension.x, mine.Bottom(Depth.Building) + dimension.y, mine.Bottom(Depth.Building));
-                b4 = new Container(mine.owner, mine.Right(Depth.Building) - dimension.x, mine.Right(Depth.Building), mine.Bottom(Depth.Building) + dimension.y, mine.Bottom(Depth.Building));
+                b1 = new ContainerXXX(mine.owner, mine.Left(Depth.Building), mine.Right(Depth.Building) - dimension.x, mine.Top(Depth.Building), mine.Bottom(Depth.Building) + dimension.y);
+                b2 = new ContainerXXX(mine.owner, mine.Right(Depth.Building) - dimension.x, mine.Right(Depth.Building), mine.Top(Depth.Building), mine.Bottom(Depth.Building) + dimension.y);
+                b3 = new ContainerXXX(mine.owner, mine.Left(Depth.Building), mine.Right(Depth.Building) - dimension.x, mine.Bottom(Depth.Building) + dimension.y, mine.Bottom(Depth.Building));
+                b4 = new ContainerXXX(mine.owner, mine.Right(Depth.Building) - dimension.x, mine.Right(Depth.Building), mine.Bottom(Depth.Building) + dimension.y, mine.Bottom(Depth.Building));
                 to_return.result = b4;
                 break;
         }
@@ -139,19 +139,19 @@ public struct ContainerSplitPacket
     /// <summary>
     /// The result container of our split.
     /// </summary>
-    public Container result;
+    public ContainerXXX result;
 
     /// <summary>
     /// The smaller of the containers after the split.
     /// </summary>
-    public Container container1;
+    public ContainerXXX container1;
 
     /// <summary>
     /// The larger of the containers after ths split.
     /// </summary>
-    public Container container2;
+    public ContainerXXX container2;
 
-    public ContainerSplitPacket(Container result, Container container1, Container container2)
+    public ContainerSplitPacket(ContainerXXX result, ContainerXXX container1, ContainerXXX container2)
     {
         this.result = result;
         this.container1 = container1;
