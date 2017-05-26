@@ -1,4 +1,4 @@
-﻿// Amplify Bloom - Advanced Bloom Post-Effect for Unity
+// Amplify Bloom - Advanced Bloom Post-Effect for Unity
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
 using UnityEngine;
@@ -20,7 +20,7 @@ namespace AmplifyBloom
 		public static string HighPrecisionKeyword = "AB_HIGH_PRECISION";
 		public static string ShaderModeTag = "Mode";
 		public static string ShaderModeValue = "Full";
-		public static string DebugStr = "[ Amplify Bloom ] ";
+		public static string DebugStr = "[AmplifyBloom] ";
 		public static int UpscaleContributionId;
 		public static int SourceContributionId;
 		public static int LensStarburstRTId;
@@ -52,7 +52,7 @@ namespace AmplifyBloom
 		public static TextureWrapMode CurrentWrapMode = TextureWrapMode.Clamp;
 		public static RenderTextureReadWrite CurrentReadWriteMode = RenderTextureReadWrite.sRGB;
 		public static bool IsInitialized = false;
-		
+
 		private static List<RenderTexture> _allocatedRT = new List<RenderTexture>();
 		public static void InitializeIds()
 		{

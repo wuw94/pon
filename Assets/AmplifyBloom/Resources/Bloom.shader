@@ -4,7 +4,7 @@
 Shader "Hidden/AmplifyBloom"
 {
 	Properties
-	{		
+	{
 		_MainTex ( " ", 2D ) = "black" {}
 		_AnamorphicRTS0 ( " ",2D ) = "black"{}
 		_AnamorphicRTS1 ( " ",2D ) = "black"{}
@@ -13,7 +13,7 @@ Shader "Hidden/AmplifyBloom"
 		_AnamorphicRTS4 ( " ",2D ) = "black"{}
 		_AnamorphicRTS5 ( " ",2D ) = "black"{}
 		_AnamorphicRTS6 ( " ",2D ) = "black"{}
-		_AnamorphicRTS7 ( " ",2D ) = "black"{}		
+		_AnamorphicRTS7 ( " ",2D ) = "black"{}
 		_LensFlareLUT( " ",2D ) = "black"{}
 	}
 
@@ -21,11 +21,11 @@ Shader "Hidden/AmplifyBloom"
 		#pragma target 3.0
 
 		#include "UnityCG.cginc"
-		#include "BloomLib.cginc"	
-		#pragma multi_compile __ AB_HIGH_PRECISION 
+		#include "BloomLib.cginc"
+		#pragma multi_compile __ AB_HIGH_PRECISION
 
 		uniform float4		_MainTex_TexelSize;// x - 1/width y - 1/height z- width w - height
-		
+
 		struct v2f_img_custom
 		{
 			float4 pos : SV_POSITION;
@@ -39,7 +39,7 @@ Shader "Hidden/AmplifyBloom"
 		{
 			v2f_img_custom o;
 
-			o.pos = mul ( UNITY_MATRIX_MVP, v.vertex );
+			o.pos = CustomObjectToClipPos( v.vertex );
 			o.uv = float4( v.texcoord.xy, 1, 1 );
 
 	#ifdef UNITY_HALF_TEXEL_OFFSET
@@ -66,9 +66,9 @@ Shader "Hidden/AmplifyBloom"
 		Pass//0
 		{
 			Name "frag_threshold"
-			
+
 			CGPROGRAM
-			#pragma vertex vert_img 
+			#pragma vertex vert_img
 			#pragma fragment frag_threshold
 			ENDCG
 		}
@@ -78,7 +78,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_thresholdMask"
 
 			CGPROGRAM
-			#pragma vertex vert_img 
+			#pragma vertex vert_img
 			#pragma fragment frag_thresholdMask
 			ENDCG
 		}
@@ -87,8 +87,8 @@ Shader "Hidden/AmplifyBloom"
 		{
 			Name "frag_anamorphicGlare"
 			CGPROGRAM
-			#pragma vertex vert_img 
-			#pragma fragment frag_anamorphicGlare		
+			#pragma vertex vert_img
+			#pragma fragment frag_anamorphicGlare
 			ENDCG
 		}
 
@@ -96,8 +96,8 @@ Shader "Hidden/AmplifyBloom"
 		{
 			Name "frag_lensFlare0"
 			CGPROGRAM
-			#pragma vertex vert_img 
-			#pragma fragment frag_lensFlare0			
+			#pragma vertex vert_img
+			#pragma fragment frag_lensFlare0
 			ENDCG
 		}
 
@@ -105,7 +105,7 @@ Shader "Hidden/AmplifyBloom"
 		{
 			Name "frag_lensFlare1"
 			CGPROGRAM
-			#pragma vertex vert_img 
+			#pragma vertex vert_img
 			#pragma fragment frag_lensFlare1
 			ENDCG
 		}
@@ -114,8 +114,8 @@ Shader "Hidden/AmplifyBloom"
 		{
 			Name "frag_lensFlare2"
 			CGPROGRAM
-			#pragma vertex vert_img 
-			#pragma fragment frag_lensFlare2	
+			#pragma vertex vert_img
+			#pragma fragment frag_lensFlare2
 			ENDCG
 		}
 
@@ -123,8 +123,8 @@ Shader "Hidden/AmplifyBloom"
 		{
 			Name "frag_lensFlare3"
 			CGPROGRAM
-			#pragma vertex vert_img 
-			#pragma fragment frag_lensFlare3			
+			#pragma vertex vert_img
+			#pragma fragment frag_lensFlare3
 			ENDCG
 		}
 
@@ -132,8 +132,8 @@ Shader "Hidden/AmplifyBloom"
 		{
 			Name "frag_lensFlare4"
 			CGPROGRAM
-			#pragma vertex vert_img 
-			#pragma fragment frag_lensFlare4	
+			#pragma vertex vert_img
+			#pragma fragment frag_lensFlare4
 			ENDCG
 		}
 
@@ -141,7 +141,7 @@ Shader "Hidden/AmplifyBloom"
 		{
 			Name "frag_lensFlare5"
 			CGPROGRAM
-			#pragma vertex vert_img 
+			#pragma vertex vert_img
 			#pragma fragment frag_lensFlare5
 			ENDCG
 		}
@@ -169,7 +169,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_downsampler_without_karis"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_downsampler_without_karis			
+			#pragma fragment frag_downsampler_without_karis
 			ENDCG
 		}
 
@@ -178,7 +178,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_downsampler_temp_filter_with_karis"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_downsampler_temp_filter_with_karis		
+			#pragma fragment frag_downsampler_temp_filter_with_karis
 			ENDCG
 		}
 
@@ -188,7 +188,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_downsampler_temp_filter_without_karis"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_downsampler_temp_filter_without_karis		
+			#pragma fragment frag_downsampler_temp_filter_without_karis
 			ENDCG
 		}
 
@@ -199,7 +199,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_horizontal_gaussian_blur"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_horizontal_gaussian_blur			
+			#pragma fragment frag_horizontal_gaussian_blur
 			ENDCG
 		}
 
@@ -209,7 +209,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_vertical_gaussian_blur"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_vertical_gaussian_blur			
+			#pragma fragment frag_vertical_gaussian_blur
 			ENDCG
 		}
 
@@ -218,7 +218,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_vertical_gaussian_blur_temp_filter"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_vertical_gaussian_blur_temp_filter			
+			#pragma fragment frag_vertical_gaussian_blur_temp_filter
 			ENDCG
 		}
 
@@ -227,7 +227,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_upscaleTentFirstPass"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_upscaleTentFirstPass			
+			#pragma fragment frag_upscaleTentFirstPass
 			ENDCG
 		}
 
@@ -236,7 +236,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_upscaleTent"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_upscaleTent			
+			#pragma fragment frag_upscaleTent
 			ENDCG
 		}
 
@@ -245,7 +245,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_weightedAddPS1"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_weightedAddPS1			
+			#pragma fragment frag_weightedAddPS1
 			ENDCG
 		}
 
@@ -254,7 +254,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_weightedAddPS2"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_weightedAddPS2			
+			#pragma fragment frag_weightedAddPS2
 			ENDCG
 		}
 
@@ -263,7 +263,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_weightedAddPS3"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_weightedAddPS3			
+			#pragma fragment frag_weightedAddPS3
 			ENDCG
 		}
 
@@ -272,7 +272,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_weightedAddPS4"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_weightedAddPS4			
+			#pragma fragment frag_weightedAddPS4
 			ENDCG
 		}
 
@@ -281,7 +281,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_weightedAddPS5"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_weightedAddPS5			
+			#pragma fragment frag_weightedAddPS5
 			ENDCG
 		}
 
@@ -290,7 +290,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_weightedAddPS6"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_weightedAddPS6			
+			#pragma fragment frag_weightedAddPS6
 			ENDCG
 		}
 
@@ -299,7 +299,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_weightedAddPS7"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_weightedAddPS7			
+			#pragma fragment frag_weightedAddPS7
 			ENDCG
 		}
 
@@ -308,7 +308,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_weightedAddPS8"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_weightedAddPS8			
+			#pragma fragment frag_weightedAddPS8
 			ENDCG
 		}
 
@@ -317,7 +317,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_BokehFiltering"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_BokehFiltering			
+			#pragma fragment frag_BokehFiltering
 			ENDCG
 		}
 
@@ -326,7 +326,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_BokehComposition2S"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_BokehComposition2S			
+			#pragma fragment frag_BokehComposition2S
 			ENDCG
 		}
 
@@ -335,7 +335,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_BokehComposition3S"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_BokehComposition3S			
+			#pragma fragment frag_BokehComposition3S
 			ENDCG
 		}
 
@@ -344,7 +344,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_BokehComposition4S"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_BokehComposition4S			
+			#pragma fragment frag_BokehComposition4S
 			ENDCG
 		}
 
@@ -353,7 +353,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_BokehComposition5S"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_BokehComposition5S			
+			#pragma fragment frag_BokehComposition5S
 			ENDCG
 		}
 
@@ -362,7 +362,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_BokehComposition6S"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_BokehComposition6S			
+			#pragma fragment frag_BokehComposition6S
 			ENDCG
 		}
 
@@ -371,7 +371,7 @@ Shader "Hidden/AmplifyBloom"
 			Name "frag_decode"
 			CGPROGRAM
 			#pragma vertex vert_img
-			#pragma fragment frag_decode			
+			#pragma fragment frag_decode
 			ENDCG
 		}
 	}

@@ -83,7 +83,7 @@ half4 frag_BokehFiltering ( v2f_img input ) : SV_Target
 	half4 samplePixel = half4( 0,0,0,0 );
 	half4 sampleDepth = half4( 0,0,0,0 );
 	half weight = 0;
-	
+
 	//0
 	sampleCoords = input.uv + _AnamorphicGlareWeights0.xy*centerPixelWeight;
 	samplePixel = tex2D ( _MainTex, UnityStereoScreenSpaceUVAdjust ( sampleCoords, _MainTex_ST ));

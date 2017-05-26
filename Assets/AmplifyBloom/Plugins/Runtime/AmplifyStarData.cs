@@ -106,7 +106,7 @@ namespace AmplifyBloom
 			}
 		}
 
-		
+
 		public StarLibType StarType
 		{
 			get
@@ -118,7 +118,7 @@ namespace AmplifyBloom
 				m_starType = value;
 			}
 		}
-		
+
 		public string StarName
 		{
 			get
@@ -144,8 +144,8 @@ namespace AmplifyBloom
 			}
 		}
 
-		
-		
+
+
 		public int PassCount
 		{
 			get
@@ -159,7 +159,7 @@ namespace AmplifyBloom
 			}
 		}
 
-		
+
 		public float SampleLength
 		{
 			get
@@ -173,7 +173,7 @@ namespace AmplifyBloom
 			}
 		}
 
-		
+
 		public float Attenuation
 		{
 			get
@@ -217,7 +217,7 @@ namespace AmplifyBloom
 			{
 				return m_starLinesArr;
 			}
-			
+
 		}
 
 		public float CustomIncrement

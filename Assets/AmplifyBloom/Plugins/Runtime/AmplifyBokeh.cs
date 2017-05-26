@@ -1,4 +1,4 @@
-﻿// Amplify Bloom - Advanced Bloom Post-Effect for Unity
+// Amplify Bloom - Advanced Bloom Post-Effect for Unity
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
 using System;
@@ -36,7 +36,7 @@ namespace AmplifyBloom
 			Offsets = null;
 		}
 	}
-	
+
 	[Serializable]
 	public sealed class AmplifyBokeh : IAmplifyItem, ISerializationCallbackReceiver
 	{
@@ -54,7 +54,7 @@ namespace AmplifyBloom
 		private float m_bokehSampleRadius = 0.5f;
 
 		[SerializeField]
-		private Vector4 m_bokehCameraProperties = new Vector4( 0.05f, 0.018f, 1.34f, 0.18f ); // x - aperture y - Focal Length z - Focal Distance w - Max CoC Diameter 
+		private Vector4 m_bokehCameraProperties = new Vector4( 0.05f, 0.018f, 1.34f, 0.18f ); // x - aperture y - Focal Length z - Focal Distance w - Max CoC Diameter
 
 		[SerializeField]
 		private float m_offsetRotation = 0;
@@ -77,7 +77,7 @@ namespace AmplifyBloom
 				m_bokehOffsets[ i ].Destroy();
 			}
 		}
-		
+
 		void CreateBokehOffsets( ApertureShape shape )
 		{
 			m_bokehOffsets.Clear();

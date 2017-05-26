@@ -1,4 +1,4 @@
-﻿// Amplify Bloom - Advanced Bloom Post-Effect for Unity
+// Amplify Bloom - Advanced Bloom Post-Effect for Unity
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
 using UnityEngine;

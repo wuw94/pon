@@ -19,7 +19,7 @@ Shader "Hidden/BloomFinal"
 	}
 
 	CGINCLUDE
-		#pragma vertex vert_img_custom 
+		#pragma vertex vert_img_custom
 		#pragma fragment frag
 		#pragma target 3.0
 
@@ -27,7 +27,7 @@ Shader "Hidden/BloomFinal"
 		#include "BloomLib.cginc"
 		#pragma multi_compile __  AB_HIGH_PRECISION
 		uniform half4		_MainTex_TexelSize;// x - 1/width y - 1/height z- width w - height
-		
+
 		uniform sampler2D	_MainTex;
 		uniform sampler2D	_MipResultsRTS0;
 		uniform sampler2D	_MipResultsRTS1;
@@ -35,28 +35,28 @@ Shader "Hidden/BloomFinal"
 		uniform sampler2D	_MipResultsRTS3;
 		uniform sampler2D	_MipResultsRTS4;
 		uniform sampler2D	_MipResultsRTS5;
-	
+
 		uniform half		_UpscaleWeights0;
 		uniform half		_UpscaleWeights1;
 		uniform half		_UpscaleWeights2;
 		uniform half		_UpscaleWeights3;
 		uniform half		_UpscaleWeights4;
 		uniform half		_UpscaleWeights5;
-	
+
 		uniform half		_LensStarburstWeights0;
 		uniform half		_LensStarburstWeights1;
 		uniform half		_LensStarburstWeights2;
 		uniform half		_LensStarburstWeights3;
 		uniform half		_LensStarburstWeights4;
 		uniform half		_LensStarburstWeights5;
-	
+
 		uniform half		_LensDirtWeights0;
 		uniform half		_LensDirtWeights1;
 		uniform half		_LensDirtWeights2;
 		uniform half		_LensDirtWeights3;
 		uniform half		_LensDirtWeights4;
 		uniform half		_LensDirtWeights5;
-	
+
 		uniform sampler2D	_LensDirt;
 		uniform sampler2D	_LensStarburst;
 		uniform sampler2D	_LensFlare;
@@ -79,14 +79,13 @@ Shader "Hidden/BloomFinal"
 			half4 uv2 : TEXCOORD1;
 			half4 stereoUV2 : TEXCOORD3;
 		#endif
-			
 		};
 
 		v2f_img_custom vert_img_custom ( appdata_img v )
 		{
 			v2f_img_custom o;
 
-			o.pos = mul ( UNITY_MATRIX_MVP, v.vertex );
+			o.pos = CustomObjectToClipPos( v.vertex );
 			o.uv = float4( v.texcoord.xy, 1, 1 );
 
 		#ifdef UNITY_HALF_TEXEL_OFFSET
@@ -96,7 +95,7 @@ Shader "Hidden/BloomFinal"
 		#if UNITY_UV_STARTS_AT_TOP
 			o.uv2 = float4( v.texcoord.xy, 1, 1 );
 			o.stereoUV2 = UnityStereoScreenSpaceUVAdjust ( o.uv2, _MainTex_ST );
-			
+
 			if ( _MainTex_TexelSize.y < 0.0 )
 				o.uv.y = 1.0 - o.uv.y;
 		#endif
@@ -136,8 +135,7 @@ Shader "Hidden/BloomFinal"
 			half3 b3 = 0;
 			half3 b4 = 0;
 			half3 b5 = 0;
-			
-			
+
 			b0 =  DecodeColor ( tex2D ( _MipResultsRTS0, input.stereoUV ) );
 			if ( count > 1 ) b1 = DecodeColor ( tex2D ( _MipResultsRTS1, input.stereoUV ) );
 			if ( count > 2 ) b2 = DecodeColor ( tex2D ( _MipResultsRTS2, input.stereoUV ) );
@@ -172,7 +170,7 @@ Shader "Hidden/BloomFinal"
 				if ( count > 5 ) weightedStarburstColor += _LensStarburstWeights5 * b5;
 			}
 
-			half4 color = tex2D ( _MainTex, stereoUV );
+			half4 color = _SourceContribution*tex2D ( _MainTex, stereoUV );
 			half4 originalUpscaleColor = half4( upscaleColor, 1 );
 			half4 bloomColor = _UpscaleContribution*originalUpscaleColor*_BloomParams.x;
 
@@ -196,7 +194,7 @@ Shader "Hidden/BloomFinal"
 			if ( starburst )
 				bloomColor.rgb = CalculateStarburst ( bloomColor, input.uv, weightedStarburstColor );
 
-			return _SourceContribution*color + bloomColor;
+			return half4( ( color + bloomColor ).rgb, color.a );
 		}
 
 	ENDCG

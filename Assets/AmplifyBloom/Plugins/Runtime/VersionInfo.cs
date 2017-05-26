@@ -10,8 +10,8 @@ namespace AmplifyBloom
 	public class VersionInfo
 	{
 		public const byte Major = 1;
-		public const byte Minor = 0;
-		public const byte Release = 9;
+		public const byte Minor = 1;
+		public const byte Release = 2;
 
 		private static string StageSuffix = "_dev001";
 

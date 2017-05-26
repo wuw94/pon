@@ -287,7 +287,7 @@ namespace AmplifyBloom
 					bloom.OverallIntensity = EditorGUILayout.FloatField( m_overallIntensityGC, bloom.OverallIntensity );
 
 					bloom.OverallThreshold = EditorGUILayout.FloatField( m_thresholdGC, bloom.OverallThreshold );
-					
+
 					SerializedProperty maskTextureField = bloomObj.FindProperty( "m_maskTexture" );
 					EditorGUI.BeginChangeCheck();
 					EditorGUILayout.PropertyField( maskTextureField, m_maskTextureGC );
@@ -295,7 +295,7 @@ namespace AmplifyBloom
 					{
 						bloomObj.ApplyModifiedProperties();
 					}
-					
+
 					SerializedProperty targetTextureField = bloomObj.FindProperty( "m_targetTexture" );
 					EditorGUI.BeginChangeCheck();
 					EditorGUILayout.PropertyField( targetTextureField, m_targetTextureGC );
@@ -305,7 +305,7 @@ namespace AmplifyBloom
 					}
 					//bloom.TargetTexture = EditorGUILayout.ObjectField( m_targetTextureGC, bloom.TargetTexture, typeof( RenderTexture ),false ) as RenderTexture;
 					bloom.DebugToScreen = ( DebugToScreenEnum ) EditorGUILayout.EnumPopup( m_debugToScreenGC, bloom.DebugToScreen );
-					bloom.ShowDebugMessages = EditorGUILayout.Toggle( m_showDebugMessagesGC, bloom.ShowDebugMessages );					
+					bloom.ShowDebugMessages = EditorGUILayout.Toggle( m_showDebugMessagesGC, bloom.ShowDebugMessages );
 					int weightMaxDowsampleCount = Mathf.Max( 1, bloom.BloomDownsampleCount );
 					{
 						EditorGUI.indentLevel++;

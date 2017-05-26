@@ -50,7 +50,11 @@ namespace AmplifyBloom
 				Debug.LogWarning("Detected Gamma Color Space. For better visual results please switch to Linear Color Space by going to Player Settings > Other Settings > Rendering Path > Color Space > Linear.");
 			}
 
+		#if UNITY_5_6_OR_NEWER
+			if ( !_camera.allowHDR )
+		#else
 			if ( !_camera.hdr )
+		#endif
 			{
 				Debug.LogWarning( "Detected LDR on camera. For better visual results please switch to HDR by hitting the HDR toggle on the Camera component." );
 			}
@@ -88,7 +92,7 @@ namespace AmplifyBloom
 
 			ThresholdSizeSlider.value = ( float ) _amplifyBloomEffect.MainThresholdSize;
 			ThresholdSizeSlider.onValueChanged.AddListener( OnThresholdSize );
-			
+
 			if ( Input.GetJoystickNames().Length > 0 )
 			{
 				m_gamePadMode = true;
@@ -114,7 +118,7 @@ namespace AmplifyBloom
 
 				m_uiElements[ m_currentOption ].Select = true;
 			}
-			
+
 		}
 
 		public void OnThresholdSize( float selection )
